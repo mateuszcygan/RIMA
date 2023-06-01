@@ -4,7 +4,7 @@ import {Button, Checkbox, CircularProgress, Grid, Menu, MenuItem, Typography} fr
 import FilterListIcon from "@material-ui/icons/FilterList";
 import NodeLink from "./GetNodeLinkExplore";
 import RestAPI from "../../../../../Services/api";
-import PaletteIcon from '@material-ui/icons/Palette';
+
 
 const Explore = (props) => {
   const {data, interests, setInterests, setData}=props
@@ -20,7 +20,7 @@ const Explore = (props) => {
   });
   const [keywords, setKeywords] = useState([]);
 
-  const [checkNewKeywords, setCheckNewKeywords] = useState(false);
+  const [checkNewKeywords, setCheckNewKeywords] = useState(false)
 
   let currentUser = JSON.parse(localStorage.getItem("rimaUser"));
 
@@ -98,7 +98,7 @@ const Explore = (props) => {
 
         if (missingInterests.length > 0){
 
-          RestAPI.getExploreData(missingInterests).then(res=>{ //backend for nodes
+          RestAPI.getExploreData(missingInterests).then(res=>{
             const {data}=res
             console.log(curData, "data cur Data ")
             let newData = data.data
@@ -135,7 +135,7 @@ const Explore = (props) => {
  useEffect(() => {
     //let curInterests= fetchKeywords()
     if(data){
-      setState({...state, graphData:null}) //beim laden wird geguckt, ob es neue Sachen gibt
+      setState({...state, graphData:null})
       compareInterests()
     }
 
@@ -166,7 +166,7 @@ const Explore = (props) => {
 
             });
             console.log(nodeData, newChecked, "nodedata")
-            setState({...state, checked: newChecked, graphData: nodeData}); //wie daten aussehen, die nodelink digagramm braucht
+            setState({...state, checked: newChecked, graphData: nodeData});
 
           })
 
@@ -187,9 +187,9 @@ const Explore = (props) => {
   };
   const handleCloseMenu = () => {
     setState({...state, openMenu: null});
-  }; //responsible for closing menu (openMenu is set to null)
+  };
 
-  const handleCheck = (index) => { //new interest from list is chosen
+  const handleCheck = (index) => {
     let checkedNew = state.checked;
     let newNodeData = [];
 
@@ -205,139 +205,19 @@ const Explore = (props) => {
 
     setState({...state, checked: checkedNew, graphData: newNodeData});
   };
-
-  const defaultSet = [
-    "#397367",
-    "#160C28",
-    "#EFCB68",
-    "#C89FA3",
-    "#368F8B",
-    "#232E21",
-    "#B6CB9E",
-    "#92B4A7",
-    "#8C8A93",
-    "#8C2155",
-    "#22577A",
-    "#7FD8BE",
-    "#875C74",
-    "#9E7682",
-    "#FCAB64",
-    "#EDCB96",
-    "#231942",
-    "#98B9F2"
-  ];
-  
-  const colSet2 = [
-    "#1e81b0",
-    "#e28743",
-    "#696258",
-    "#eab676",
-    "#76b5c5",
-    "#21130d",
-    "#6a66c7",
-    "#873e23",
-    "#063970",
-    "#22cccc",
-    "#aa9999",
-    "#888888",
-    "#57b8bc",
-    "#259faf",
-    "#044553",
-    "#585551",
-    "#6bc7e6",
-    "#fdb872"
-  ];
-
-  const colSet3 = [
-    "#e6194B",
-    "#f58231",
-    "#ffc107",
-    "#CDDC39", 
-    "#3cb44b",
-    "#42d4f4",
-    "#4363d8",
-    "#911eb4",
-    "#bb33ff",
-    "#ff6699",
-    "#CDDC39", 
-    "#3cb44b",
-    "#42d4f4",
-    "#4363d8",
-    "#911eb4",
-    "#bb33ff",
-    "#ff6699",
-    "#CDDC39"
-];
-
-  const [nodeColors, setNodeColors] = useState(defaultSet);
-
-  const [selectedColorBox, setSelectedColorBox] = useState(1);
-
-  const [stateColor, setStateColor] = useState({
-    openColorsMenu: null,
-    checked: 1,
-  });
-
-  const handleColorChange = (index) => {
-    // Logic to handle color change based on the selected checkbox
-    if (index === 1) {
-      setNodeColors(defaultSet);
-    } else if (index === 2) {
-      setNodeColors(colSet2);
-    } else if (index === 3) {
-      setNodeColors(colSet3);
-    }
-  };
-
-  const handleSelectedColorBox = (index) => {
-    if (index === 1) {
-      setSelectedColorBox(1);
-    } else if (index === 2) {
-      setSelectedColorBox(2);
-    } else if (index === 3) {
-      setSelectedColorBox(3);
-    }
-  };
-
-  const handleOpenNodeColorsMenu = (event) => {
-    setStateColor({...stateColor, openColorsMenu: event.currentTarget});
-    console.log(stateColor);
-  };
-
-  const handleCloseNodeColorsMenu = () => {
-    setStateColor({ ...stateColor, openColorsMenu: null });
-    console.log(stateColor);
-  };
-
-  useEffect(() => {
-    NodeLink.colors = nodeColors;
-    // console.log(nodeColors);
-  }, [nodeColors]);
-
-  /* useEffect(() => {
-export const getNodeColors = () => {
-
-    useEffect(() => {
-    // Function to be executed whenever nodeColors state changes
-    console.log('Current nodeColors state:', nodeColors);
-  }, [nodeColors]);
-
-  return nodeColors;
-}; */
-  
   return (
 
     <>
-      <Grid container justify="space-between" style={{paddingTop: 24, paddingBottom: 8}}>
-        <Button startIcon={<FilterListIcon/>} color="primary" onClick={handleOpenMenu} style={{ order: 2 }}>
+      <Grid container justify="flex-end" style={{paddingTop: 24, paddingBottom: 8}}>
+        <Button startIcon={<FilterListIcon/>} color="primary" onClick={handleOpenMenu}>
           Filter interests
         </Button>
         {data?<Menu
             id="filterInterestExplore"
-            anchorEl={state.openMenu} //used for controlling the visibility of the menu, next to the button element
+            anchorEl={state.openMenu}
             keepMounted
             open={Boolean(state.openMenu)}
-            onClose={handleCloseMenu} //function responsible for closing menu
+            onClose={handleCloseMenu}
         >
           {state.checked.length > 0 ? data.map((d, index) => {
             let isChecked = state.checked[index];
@@ -354,71 +234,11 @@ export const getNodeColors = () => {
             );
           }) : <></>}
         </Menu>:<></>}
-        <Button 
-          startIcon={<PaletteIcon/>} 
-          color="primary" 
-          onClick={handleOpenNodeColorsMenu} 
-          style={{ order: 1 }}
-        >
-          Change colors of nodes
-        </Button>
-        {stateColor.openColorsMenu && (
-      <Menu
-        id="nodeColorsMenu"
-        anchorEl={stateColor.openColorsMenu} //openNodeColors menu is nowhere defined
-        open={Boolean(stateColor.openColorsMenu)}
-        onClose={handleCloseNodeColorsMenu}
-      >
-        <MenuItem>
-          <Checkbox 
-          checked={selectedColorBox === 1}
-          onChange={() => 
-          {
-            handleColorChange(1);
-            handleSelectedColorBox(1);
-            console.log('Set of colors changed to default set');
-            nodeColors.forEach(element => console.log(element));
-           } 
-          }
-          />
-          <Typography variant="body1">1st set</Typography>
-        </MenuItem>
-        <MenuItem>
-          <Checkbox 
-          checked={selectedColorBox === 2}
-          onChange={() => 
-          {
-            handleColorChange(2);
-            handleSelectedColorBox(2);
-            console.log('Set of colors changed to second set');
-            nodeColors.forEach(element => console.log(element));
-            // let colors = getNodeColors();
-           }
-          } 
-          />
-          <Typography variant="body1">2nd set</Typography>
-        </MenuItem>
-        <MenuItem>
-          <Checkbox 
-          checked={selectedColorBox === 3}
-          onChange={() => 
-            {
-              handleColorChange(3);
-              handleSelectedColorBox(3);
-              console.log('Set of colors changed to third set');
-              nodeColors.forEach(element => console.log(element));
-            }
-            } 
-            />
-            <Typography variant="body1">3rd set</Typography>
-        </MenuItem>
-      </Menu>
-    )}
       </Grid>
       <Grid container>
         <Grid item xs={1}/>
         <Grid item xs={10}>
-          {data ? <NodeLink data={state.graphData} keywords={keywords} colors={nodeColors}/> : <Loading/>}
+          {data ? <NodeLink data={state.graphData} keywords={keywords}/> : <Loading/>}
         </Grid>
         <Grid item xs={1}/>
       </Grid>
@@ -428,7 +248,6 @@ export const getNodeColors = () => {
 };
 
 export default Explore;
-
 
 export const Loading = () => {
   return (

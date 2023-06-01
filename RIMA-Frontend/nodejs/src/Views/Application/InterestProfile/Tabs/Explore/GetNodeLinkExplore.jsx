@@ -12,31 +12,27 @@ import RestAPI from "../../../../../Services/api";
 
 cytoscape.use(cxtmenu);
 
-let colorPalette = [
-  "#397367",
-  "#160C28",
-  "#EFCB68",
-  "#C89FA3",
-  "#368F8B",
-  "#232E21",
-  "#B6CB9E",
-  "#92B4A7",
-  "#8C8A93",
-  "#8C2155",
-  "#22577A",
-  "#7FD8BE",
-  "#875C74",
-  "#9E7682",
-  "#FCAB64",
-  "#EDCB96",
-  "#231942",
-  "#98B9F2"
-];
-
-function getColor(currColors, colors) {
-
-  const allColors = colors;
-
+function getColor(currColors) {
+  const allColors = [
+    "#397367",
+    "#160C28",
+    "#EFCB68",
+    "#C89FA3",
+    "#368F8B",
+    "#232E21",
+    "#B6CB9E",
+    "#92B4A7",
+    "#8C8A93",
+    "#8C2155",
+    "#22577A",
+    "#7FD8BE",
+    "#875C74",
+    "#9E7682",
+    "#FCAB64",
+    "#EDCB96",
+    "#231942",
+    "#98B9F2"
+  ];
   let pickedColor = "";
   if (allColors.length === currColors.length) {
     currColors = [];
@@ -58,7 +54,7 @@ function getElements(data) {
   let currColors = [];
   try{
     data.map((d) => {
-      let colors = getColor(currColors, colorPalette);
+      let colors = getColor(currColors);
       currColors = colors[1];
       let label = d.title;
       let explore = d.relatedTopics;
@@ -135,12 +131,12 @@ function getElements(data) {
   }
 
   ;
-  //
-  return [elements, currColors];
+
+  return elements;
 }
 
 const NodeLink = (props) => {
-  const {data, keywords, colors} = props;
+  const {data, keywords} = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
@@ -159,7 +155,7 @@ const NodeLink = (props) => {
 
   const validateInterest = (interests, interest) => {
     return interests.some((i) => i.text === interest.toLowerCase());
-  }; // check, if there is a particular interest in array of interests
+  };
 
   const addNewInterest = async (currInterest) => {
     let alreadyExist = validateInterest(keywords, currInterest);
@@ -189,7 +185,7 @@ const NodeLink = (props) => {
          });
          console.log("Updated list", listOfInterests)
          try {
-             await RestAPI.addKeyword(listOfInterests); //what does it do?
+             await RestAPI.addKeyword(listOfInterests);
          } catch (err) {
              console.log(err);
          }
@@ -201,13 +197,11 @@ const NodeLink = (props) => {
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
-    colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    getColor(elementsCurr[1], colorPalette);
 
     setElements([]);
-    setElements(elementsCurr[0]);
-  }, [data, NodeLink.colors]);
+    setElements(elementsCurr);
+  }, [data]);
 
 
   //const elements = getElements(data);
