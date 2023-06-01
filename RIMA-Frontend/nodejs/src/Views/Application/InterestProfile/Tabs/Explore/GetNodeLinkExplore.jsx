@@ -49,7 +49,7 @@ function getColor(currColors) {
 function getElements(data) {
   let ids = [...Array(200).keys()];
   let elements = [
-    {data: {id: -1, label: "My Interests", level: 0, color: "black"}}
+    {data: {id: -1, label: "My Interests", level: 0, color: "black"}} //from this node we want to add 'Add own interests' button
   ];
   let currColors = [];
   try{
@@ -194,6 +194,34 @@ const NodeLink = (props) => {
      console.log("Interest already exists in my list!")
   }
 
+  const promptForURL = () => {
+    let ownInterest = prompt("Please give a Wikipedia URL to interest that you want to add", "");
+    alert(ownInterest);
+  }
+
+  /*
+  function sendInputValue(wikiUrl) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/process-wikiurl", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        console.log("Request sent successfully.");
+      } else {
+        console.error("Failed to send request.");
+      }
+    }
+  };
+  
+
+  const data = JSON.stringify({ wikiUrl });
+  xhr.send(data);
+}
+*/
+
+
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
@@ -274,7 +302,7 @@ const NodeLink = (props) => {
   return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2"}}
+        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2"}} //creating space for nodes (rectangle)
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
@@ -285,6 +313,75 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph).run();
 
           cy.fit();
+
+          let defaultsLevel0 = {
+            selector: "node[level=0]",
+            menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
+            //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
+            commands: [
+              {
+                content: "Add own interest", // html/text content to be displayed in the menu
+                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                select: function (ele) {
+                  const modal = document.getElementById("modal");
+                  modal.style.display = "block";
+
+                  const submitButton = document.getElementById("submitButton");
+                  const cancelButton = document.getElementById("cancelButton");
+
+                  /*
+                  submitButton.addEventListener("click", function () {
+                    const wikiUrl = document.getElementById("wikiUrlInput").value;
+                    modal.style.display = "none";
+                  });
+                  */
+
+                  submitButton.addEventListener("click", function () {
+                    const wikiUrl = document.getElementById("wikiUrlInput").value;
+                    modal.style.display = "none";
+                  
+                    // Send an HTTP POST request to the Python file
+                    fetch('http://localhost:8000/server.py', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ wikiUrl }),
+                    })
+                      .then(response => response.json())
+                      .then(data => {
+                        // Handle the response from the Python file if needed
+                        console.log(data);
+                      })
+                      .catch(error => {
+                        // Handle any errors
+                        console.error('Error:', error);
+                      });
+                  });                  
+
+                  cancelButton.addEventListener("click", function () {
+                    modal.style.display = "none";
+                  });
+                },
+                enabled: true,
+              }
+            ],
+            fillColor: "black", // the background colour of the menu
+            activeFillColor: "grey", // the colour used to indicate the selected command
+            activePadding: 8, // additional size in pixels for the active command
+            indicatorSize: 24, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
+            separatorWidth: 3, // the empty spacing in pixels between successive commands
+            spotlightPadding: 8, // extra spacing in pixels between the element and the spotlight
+            adaptativeNodeSpotlightRadius: true, // specify whether the spotlight radius should adapt to the node size
+            //minSpotlightRadius: 24, // the minimum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+            //maxSpotlightRadius: 38, // the maximum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+            openMenuEvents: "tap", // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
+            itemColor: "white", // the colour of text in the command's content
+            itemTextShadowColor: "transparent", // the text shadow colour of the command's content
+            zIndex: 9999, // the z-index of the ui div
+            atMouse: false, // draw menu at mouse position
+            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+          };
 
           let defaultsLevel2 = {
             selector: "node[level=2]",
@@ -506,6 +603,7 @@ const NodeLink = (props) => {
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
+          let menu0 = cy.cxtmenu(defaultsLevel0);
 
           /*
         cy.on("tap", "node", function (evt) {
@@ -533,6 +631,15 @@ const NodeLink = (props) => {
         </DialogActions>
       </Dialog>
       <ToastContainer/>
+
+      <div id="modal" style={{ display: "none", position: "fixed", zIndex: 900, top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+        <div id="modal-content" style={{ backgroundColor: "#fff", padding: "20px", maxWidth: "400px", margin: "100px auto" }}>
+          <h2>Please give a Wikipedia URL to interest that you want to add:</h2>
+          <input type="text" id="wikiUrlInput" />
+          <button id="submitButton">Submit</button>
+          <button id="cancelButton">Cancel</button>
+        </div>
+      </div>
     </>
   );
 };
