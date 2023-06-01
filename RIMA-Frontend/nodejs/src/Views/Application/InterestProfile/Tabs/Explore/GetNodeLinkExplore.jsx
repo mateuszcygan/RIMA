@@ -12,31 +12,27 @@ import RestAPI from "../../../../../Services/api";
 
 cytoscape.use(cxtmenu);
 
-let colorPalette = [
-  "#397367",
-  "#160C28",
-  "#EFCB68",
-  "#C89FA3",
-  "#368F8B",
-  "#232E21",
-  "#B6CB9E",
-  "#92B4A7",
-  "#8C8A93",
-  "#8C2155",
-  "#22577A",
-  "#7FD8BE",
-  "#875C74",
-  "#9E7682",
-  "#FCAB64",
-  "#EDCB96",
-  "#231942",
-  "#98B9F2"
-];
-
-function getColor(currColors, colors) {
-
-  const allColors = colors;
-
+function getColor(currColors) {
+  const allColors = [
+    "#397367",
+    "#160C28",
+    "#EFCB68",
+    "#C89FA3",
+    "#368F8B",
+    "#232E21",
+    "#B6CB9E",
+    "#92B4A7",
+    "#8C8A93",
+    "#8C2155",
+    "#22577A",
+    "#7FD8BE",
+    "#875C74",
+    "#9E7682",
+    "#FCAB64",
+    "#EDCB96",
+    "#231942",
+    "#98B9F2"
+  ];
   let pickedColor = "";
   if (allColors.length === currColors.length) {
     currColors = [];
@@ -58,7 +54,7 @@ function getElements(data) {
   let currColors = [];
   try{
     data.map((d) => {
-      let colors = getColor(currColors, colorPalette);
+      let colors = getColor(currColors);
       currColors = colors[1];
       let label = d.title;
       let explore = d.relatedTopics;
@@ -135,17 +131,23 @@ function getElements(data) {
   }
 
   ;
-  //
-  return [elements, currColors];
+
+  return elements;
+  
 }
 
+
+
+
+
 const NodeLink = (props) => {
-  const {data, keywords, colors} = props;
+  const {data, keywords,setKeywords} = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
     openAdd: null
   });
+ 
 
 
 
@@ -159,9 +161,68 @@ const NodeLink = (props) => {
 
   const validateInterest = (interests, interest) => {
     return interests.some((i) => i.text === interest.toLowerCase());
-  }; // check, if there is a particular interest in array of interests
+  };
 
+ // NEUE DELETE FUNKTION
+  const deleteInterest = async (interest) => {
+    try {
+      // Perform the deletion logic, e.g., calling an API to delete the interest
+      await RestAPI.deleteInterest(interest.id);
+      
+      // Update the keywords state by removing the deleted interest
+      const updatedKeywords = keywords.filter((k) => k.id !== interest.id);
+      setKeywords(updatedKeywords);
+      
+      // Show a success toast notification
+      toast.success(`Successfully deleted interest: ${interest.text}`, {
+        toastId: "deleteInterest"
+      });
+    } catch (error) {
+      console.error("Error deleting interest:", error);
+      // Show an error toast notification
+      toast.error("Failed to delete the interest. Please try again later.", {
+        toastId: "deleteInterest"
+      });
+    }
+  };
+  
+//ADD FUNKTION WURDE geändert, die alte ist unten
   const addNewInterest = async (currInterest) => {
+    const alreadyExist = keywords.some((interest) => interest.text === currInterest.toLowerCase());
+  
+    if (alreadyExist) {
+      console.log("Interest already exists in my list!");
+      return;
+    }
+  
+    const newInterest = {
+      id: Date.now(),
+      categories: [],
+      originalKeywords: [],
+      source: "Manual",
+      text: currInterest.toLowerCase(),
+      value: 3,
+    };
+  
+    const newKeywords = [...keywords, newInterest];
+  
+    try {
+      await RestAPI.addKeyword(newKeywords);
+      newKeywords(newKeywords);
+  
+      const msg = `The interest "${currInterest}" has been added to your interests.`;
+      toast.success(msg, {
+        toastId: "addLevel2"
+      });
+    } catch (error) {
+      console.error("Error adding interest:", error);
+      toast.error("Failed to add the interest. Please try again later.", {
+        toastId: "addLevel2"
+      });
+    }
+  };
+  
+  /*const addNewInterest = async (currInterest) => {
     let alreadyExist = validateInterest(keywords, currInterest);
 
      if (!alreadyExist) {
@@ -189,25 +250,23 @@ const NodeLink = (props) => {
          });
          console.log("Updated list", listOfInterests)
          try {
-             await RestAPI.addKeyword(listOfInterests); //what does it do?
+             await RestAPI.addKeyword(listOfInterests);
          } catch (err) {
              console.log(err);
          }
          // console.log(newInterests)
      }
      console.log("Interest already exists in my list!")
-  }
+  }*/
 
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
-    colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    getColor(elementsCurr[1], colorPalette);
 
     setElements([]);
-    setElements(elementsCurr[0]);
-  }, [data, NodeLink.colors]);
+    setElements(elementsCurr);
+  }, [data]);
 
 
   //const elements = getElements(data);
@@ -310,10 +369,44 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+              {//DELETE INTEREST NEU
+                content: "Delete",
+                select: function (ele) {
+                  const interest = ele.data(); // Get the interest data
+                  deleteInterest(interest); // Call the deleteInterest function
+                },
+                enabled: true
+              },
+              
               {
                 content: "Expand", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
                 select: function (ele) {
+                  let succ = ele.successors().targets();
+                  let edges = ele.successors();
+                  let ids = [];
+                  edges.forEach((e) => {
+                    const targetId = e.data()["target"];
+                    const sourceId = e.data()["source"];
+                    const edgeId = e.data()["id"];
+                
+                    // Check if the IDs already exist in the array
+                    const targetExists = ids.includes(targetId);
+                    const sourceExists = ids.includes(sourceId);
+                    const edgeExists = ids.includes(edgeId);
+                
+                    // Push the IDs to the array if they don't already exist
+                    if (!targetExists) ids.push(targetId);
+                    if (!sourceExists) ids.push(sourceId);
+                    if (!edgeExists) ids.push(edgeId);
+                
+                    e.removeClass("collapsed");
+                  });
+                
+                  cy.fit([ele, succ, edges], 16);
+                }
+                
+                /*select: function (ele) {
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
                   let ids = [];
@@ -330,9 +423,10 @@ const NodeLink = (props) => {
                   /*succ.map((s) => {
                     s.removeClass("collapsed");
                   });*/
-                  cy.fit([ele, succ, edges], 16);
-                },
-                enabled: true
+                  //cy.fit([ele, succ, edges], 16);
+                //}
+
+                ,enabled: true
 
                 // whether the command is selectable
               },
@@ -389,6 +483,15 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+              {//DELETE INTEREST NEU
+                content: "Delete",
+                select: function (ele) {
+                  const interest = ele.data(); // Get the interest data
+                  deleteInterest(interest); // Call the deleteInterest function
+                },
+                enabled: true
+              }
+              ,
               {
                 // example command
                 // optional: custom background color for item
@@ -455,6 +558,7 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+              {content: "Delete"},
               {
                 // example command
 
