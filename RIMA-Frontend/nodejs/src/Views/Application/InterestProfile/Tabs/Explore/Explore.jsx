@@ -24,7 +24,7 @@ const Explore = (props) => {
 
   let currentUser = JSON.parse(localStorage.getItem("rimaUser"));
 
-  const fetchKeywords = async () => {
+  const fetchKeywords = async () => { //a
     //setState({...state,userInterests: []})
     const response = await RestAPI.longTermInterest(currentUser);
     const {data} = response;
@@ -47,13 +47,13 @@ const Explore = (props) => {
       dataArray.push(newData);
     })
     setKeywords(dataArray);
-    console.log(curInterests, "test fetch")
+    console.log(curInterests, "test fetch") //
     return curInterests
 
   };
 
 
-  const compareInterests = async () => {
+  const compareInterests = async () => { //ursprüngliche Intrests mit späteren vergleichen
     setCheckNewKeywords(false)
     let curInterests = await fetchKeywords()
     let oldInterests = interests
@@ -98,7 +98,7 @@ const Explore = (props) => {
 
         if (missingInterests.length > 0){
 
-          RestAPI.getExploreData(missingInterests).then(res=>{ //backend for nodes
+          RestAPI.getExploreData(missingInterests).then(res=>{ //backend for nodes, für neune Interesse Daten generieren
             const {data}=res
             console.log(curData, "data cur Data ")
             let newData = data.data
@@ -381,7 +381,7 @@ export const getNodeColors = () => {
            } 
           }
           />
-          <Typography variant="body1">1st set</Typography>
+          <Typography variant="body1">midnight shadows</Typography>
         </MenuItem>
         <MenuItem>
           <Checkbox 
@@ -396,7 +396,7 @@ export const getNodeColors = () => {
            }
           } 
           />
-          <Typography variant="body1">2nd set</Typography>
+          <Typography variant="body1">deep ocean</Typography>
         </MenuItem>
         <MenuItem>
           <Checkbox 
@@ -410,7 +410,7 @@ export const getNodeColors = () => {
             }
             } 
             />
-            <Typography variant="body1">3rd set</Typography>
+            <Typography variant="body1">spring meadow</Typography>
         </MenuItem>
       </Menu>
     )}
