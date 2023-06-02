@@ -117,11 +117,10 @@ def getDataExplore(interests):
         print(data, "data interest")
     
     with open("data.json", "w") as myfile:
-        json.dump(data, myfile)    
-    """
-    
+        json.dump(data, myfile)
+    """        
     with open("data.json", "r") as myfile:
         data = json.load(myfile)
-
+    
     return data
 
