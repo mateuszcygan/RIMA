@@ -142,7 +142,7 @@ const NodeLink = (props) => {
     openLearn: null,
     openAdd: null
   });
-
+  
 
 
   const handleOpenLearn = (ele) => {
@@ -268,12 +268,12 @@ const NodeLink = (props) => {
         "background-opacity": 0.4,
         "line-color": "data(color)"
       }
-    }
+    }   
   ];
 
-  return (
+ return (
     <>
-      <CytoscapeComponent
+      <CytoscapeComponent 
         style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2"}}
         layout={layoutGraph}
         stylesheet={stylesheet}
@@ -285,6 +285,11 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph).run();
 
           cy.fit();
+          cy.on('mouseover', (event) => {
+            if(event.cy.container()) {
+              event.cy.container().style.cursor = 'pointer';
+            }
+          })
 
           let defaultsLevel2 = {
             selector: "node[level=2]",
@@ -343,7 +348,7 @@ const NodeLink = (props) => {
                     " has added to your interests";
                   toast.success(msg, {
                     toastId: "addLevel2"
-                  }); // `ele` holds the reference to the active element
+                  }); // `ele` holds the reference to the active element 
                 },
                 enabled: true // whether the command is selectable
               }
@@ -351,7 +356,7 @@ const NodeLink = (props) => {
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
-            indicatorSize: 24, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
+            indicatorSize: 30, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
             separatorWidth: 3, // the empty spacing in pixels between successive commands
             spotlightPadding: 8, // extra spacing in pixels between the element and the spotlight
             adaptativeNodeSpotlightRadius: true, // specify whether the spotlight radius should adapt to the node size
@@ -398,9 +403,7 @@ const NodeLink = (props) => {
                     s.removeClass("collapsed");
                   }); // `ele` holds the reference to the active element
                 },
-                enabled: false
-
-                // whether the command is selectable
+                enabled: false // whether the command is selectable
               },
               {
                 // example command
@@ -506,7 +509,7 @@ const NodeLink = (props) => {
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
-
+        
           /*
         cy.on("tap", "node", function (evt) {
           let node = evt.target;
@@ -525,7 +528,7 @@ const NodeLink = (props) => {
           <DialogTitle>Learn more</DialogTitle>
         )}
         <DialogContent>
-          {" "}
+          {""}
           <WikiDesc data={openDialog.nodeObj}/>
         </DialogContent>
         <DialogActions>
@@ -533,6 +536,7 @@ const NodeLink = (props) => {
         </DialogActions>
       </Dialog>
       <ToastContainer/>
+      {}
     </>
   );
 };
