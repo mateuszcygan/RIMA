@@ -1,6 +1,7 @@
 import wikipediaapi
 import random
 import time
+import json
 
 def getPagesInCategory(cat):
     wiki= wikipediaapi.Wikipedia("en")
@@ -106,6 +107,7 @@ def getDataNewInterestExplore(interest):
     return data
 
 def getDataExplore(interests):
+    """
     data=[]
     for i in interests:
         print("\n\n\n",i, "new interests")
@@ -113,5 +115,13 @@ def getDataExplore(interests):
         time.sleep(1)
         data.append(currData)
         print(data, "data interest")
+    
+    with open("data.json", "w") as myfile:
+        json.dump(data, myfile)    
+    """
+    
+    with open("data.json", "r") as myfile:
+        data = json.load(myfile)
+
     return data
 
