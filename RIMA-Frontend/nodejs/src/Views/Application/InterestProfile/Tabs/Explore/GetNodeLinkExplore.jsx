@@ -372,7 +372,7 @@ const NodeLink = (props) => {
  return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2"}} //creating space for nodes (rectangle)
+        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}} //creating space for nodes (rectangle)
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
