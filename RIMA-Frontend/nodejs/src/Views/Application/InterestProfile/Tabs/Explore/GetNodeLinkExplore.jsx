@@ -2,7 +2,7 @@ import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
 import React, {useEffect, useState} from "react"
 
-import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@material-ui/core";
+import { Dialog, DialogTitle, DialogContent, TextField, Button, DialogActions } from '@material-ui/core';
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
 import WikiDesc from "../Connect/WikiDesc";
@@ -299,6 +299,22 @@ const NodeLink = (props) => {
     }
   ];
 
+    const [modalOpen, setModalOpen] = useState(false);
+  
+    const handleOpenModal = () => {
+      setModalOpen(true);
+    };
+  
+    const handleCloseModal = () => {
+      setModalOpen(false);
+    };
+  
+    const handleAddInterest = () => {
+      const wikiUrl = document.getElementById('wikiUrlInput').value;
+      // Perform the necessary actions with the wikiUrl
+      handleCloseModal();
+    };
+
   return (
     <>
       <CytoscapeComponent
@@ -316,55 +332,16 @@ const NodeLink = (props) => {
 
           let defaultsLevel0 = {
             selector: "node[level=0]",
-            menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
-            //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
+            menuRadius: 75,
             commands: [
               {
-                content: "Add own interest", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                content: "Add own interest",
+                contentStyle: {},
                 select: function (ele) {
-                  const modal = document.getElementById("modal");
-                  modal.style.display = "block";
-
-                  const submitButton = document.getElementById("submitButton");
-                  const cancelButton = document.getElementById("cancelButton");
-
-                  /*
-                  submitButton.addEventListener("click", function () {
-                    const wikiUrl = document.getElementById("wikiUrlInput").value;
-                    modal.style.display = "none";
-                  });
-                  */
-
-                  submitButton.addEventListener("click", function () {
-                    const wikiUrl = document.getElementById("wikiUrlInput").value;
-                    modal.style.display = "none";
-                  
-                    // Send an HTTP POST request to the Python file
-                    fetch('http://localhost:8000/server.py', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ wikiUrl }),
-                    })
-                      .then(response => response.json())
-                      .then(data => {
-                        // Handle the response from the Python file if needed
-                        console.log(data);
-                      })
-                      .catch(error => {
-                        // Handle any errors
-                        console.error('Error:', error);
-                      });
-                  });                  
-
-                  cancelButton.addEventListener("click", function () {
-                    modal.style.display = "none";
-                  });
+                  handleOpenModal();
                 },
                 enabled: true,
-              }
+              },
             ],
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -632,15 +609,23 @@ const NodeLink = (props) => {
       </Dialog>
       <ToastContainer/>
 
-      <div id="modal" style={{ display: "none", position: "fixed", zIndex: 900, top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-        <div id="modal-content" style={{ backgroundColor: "#fff", padding: "20px", maxWidth: "400px", margin: "100px auto" }}>
-          <h2>Please give a Wikipedia URL to interest that you want to add:</h2>
-          <input type="text" id="wikiUrlInput" />
-          <button id="submitButton">Submit</button>
-          <button id="cancelButton">Cancel</button>
-        </div>
-      </div>
+      <Dialog open={modalOpen} onClose={handleCloseModal}>
+        <DialogTitle>Please give a Wikipedia URL to the interest you want to add:</DialogTitle>
+        <DialogContent>
+          <TextField id="wikiUrlInput" type="text" fullWidth />
+        </DialogContent>
+        <DialogActions>
+          <Button id="submitButton" variant="contained" onClick={handleAddInterest} color="primary">
+            Submit
+          </Button>
+          <Button id="cancelButton" variant="contained" onClick={handleCloseModal} color="secondary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </>
   );
 };
+
 export default NodeLink;
