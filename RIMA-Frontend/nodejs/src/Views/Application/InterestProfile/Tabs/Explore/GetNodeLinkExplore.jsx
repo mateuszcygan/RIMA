@@ -1,8 +1,9 @@
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
 import React, {useEffect, useState} from "react"
+//import './cytoscape.css';
 
-import { Dialog, DialogTitle, DialogContent, TextField, Button, DialogActions } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions } from '@material-ui/core';
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
 import WikiDesc from "../Connect/WikiDesc";
@@ -299,21 +300,44 @@ const NodeLink = (props) => {
     }
   ];
 
-    const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [articles, setArticles] = useState([]);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleKeywordChange = (event) => {
+    setKeyword(event.target.value);
+  };
+
+  const handleSearchArticles = () => {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3`;
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        const fetchedArticles = data.query.search.map((article) => ({
+          title: article.title,
+          link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+        }));
+        setArticles(fetchedArticles);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleSelectArticle = (article) => {
+    setSelectedArticle(article);
+  };
   
-    const handleOpenModal = () => {
-      setModalOpen(true);
-    };
-  
-    const handleCloseModal = () => {
-      setModalOpen(false);
-    };
-  
-    const handleAddInterest = () => {
-      const wikiUrl = document.getElementById('wikiUrlInput').value;
-      // Perform the necessary actions with the wikiUrl
-      handleCloseModal();
-    };
 
   return (
     <>
@@ -339,6 +363,7 @@ const NodeLink = (props) => {
                 contentStyle: {},
                 select: function (ele) {
                   handleOpenModal();
+                  console.log(articles);
                 },
                 enabled: true,
               },
@@ -379,30 +404,49 @@ const NodeLink = (props) => {
                 enabled: true // whether the command is selectable
               },
               {
-                content: "Expand", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                content: "Expand",
+                contentStyle: {},
                 select: function (ele) {
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
-                  let ids = [];
-                  edges.map((e) => {
-                    e.removeClass("collapsed");
-                    ids.push(
-                      e.data()["target"],
-                      e.data()["source"],
-                      e.data()["id"]
-                    );
-                    console.log(ids, "test");
+
+                  edges.style("opacity", 0)
+                  .animate({
+                    style: { opacity: 1 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false
                   });
+              
+                  succ.style("opacity", 0)
+                    .animate({
+                      style: { opacity: 1 },
+                      duration: 600,
+                      easing: "ease-in-sine",
+                      queue: false
+                    });
 
-                  /*succ.map((s) => {
-                    s.removeClass("collapsed");
-                  });*/
-                  cy.fit([ele, succ, edges], 16);
-                },
-                enabled: true
+                    
+              
+                let ids = [];
+                edges.map((e) => {
+                  e.removeClass("collapsed");
+                  ids.push(
+                    e.data()["target"],
+                    e.data()["source"],
+                    e.data()["id"]
+                  );
+                  console.log(ids, "test");
+                });
 
-                // whether the command is selectable
+                /*succ.map((s) => {
+                  s.removeClass("collapsed");
+                });*/
+                cy.fit([ele, succ, edges], 16);
+              },
+              enabled: true
+  
+                  // whether the command is selectable
               },
               {
                 content: "Add to my interests", // html/text content to be displayed in the menu
@@ -593,37 +637,36 @@ const NodeLink = (props) => {
         })*/
         }}
       />
-      <Dialog open={openDialog.openLearn} onClose={handleCloseLearn}>
-        {openDialog.nodeObj != null ? (
-          <DialogTitle>Learn More about {openDialog.nodeObj.label}</DialogTitle>
-        ) : (
-          <DialogTitle>Learn more</DialogTitle>
-        )}
-        <DialogContent>
-          {" "}
-          <WikiDesc data={openDialog.nodeObj}/>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseLearn}>Close</Button>
-        </DialogActions>
-      </Dialog>
-      <ToastContainer/>
-
       <Dialog open={modalOpen} onClose={handleCloseModal}>
-        <DialogTitle>Please give a Wikipedia URL to the interest you want to add:</DialogTitle>
+        <DialogTitle>Please enter a keyword to search for relevant articles:</DialogTitle>
         <DialogContent>
-          <TextField id="wikiUrlInput" type="text" fullWidth />
+          <TextField id="keywordInput" type="text" value={keyword} onChange={handleKeywordChange} fullWidth />
+          <Button variant="contained" onClick={handleSearchArticles} color="primary">
+            Search
+          </Button>
+          <List>
+            {articles.map((article, index) => (
+              <ListItem button key={index} onClick={() => handleSelectArticle(article)}>
+                <ListItemText primary={article.title} />
+              </ListItem>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button id="submitButton" variant="contained" onClick={handleAddInterest} color="primary">
-            Submit
-          </Button>
-          <Button id="cancelButton" variant="contained" onClick={handleCloseModal} color="secondary">
+          <Button variant="contained" onClick={handleCloseModal} color="secondary">
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
-
+      {selectedArticle && (
+        <div>
+          <h2>Selected Article:</h2>
+          <p>Title: {selectedArticle.title}</p>
+          <p>
+            Link: <a href={selectedArticle.link}>{selectedArticle.link}</a>
+          </p>
+        </div>
+      )}
     </>
   );
 };
