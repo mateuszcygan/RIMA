@@ -50,11 +50,12 @@ function getColor(currColors) {
 function getElements(data) {
   let ids = [...Array(200).keys()];
   let elements = [
-    {data: {id: -1, label: "My Interests", level: 0, color: "black"}} //from this node we want to add 'Add own interests' button
+    {data: {id: -1, label: "My Interests", level: 0, color: "black"}}
   ];
   
   let currColors = [];
-  try{
+  console.log(elements);
+  try {
     data.map((d) => {
       let colors = getColor(currColors);
       currColors = colors[1];
@@ -125,7 +126,6 @@ function getElements(data) {
         });
       });
     })
-
   } catch{
     elements = [
       {data: {id: -1, label: "Sorry, an error occurred.", level: 0, color: "red"}}
@@ -194,38 +194,16 @@ const NodeLink = (props) => {
      console.log("Interest already exists in my list!")
   }
 
-  /*
-  function sendInputValue(wikiUrl) {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/process-wikiurl", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.onreadystatechange = function () {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        console.log("Request sent successfully.");
-      } else {
-        console.error("Failed to send request.");
-      }
-    }
-  };
-  
-
-  const data = JSON.stringify({ wikiUrl });
-  xhr.send(data);
-}
-*/
-
-
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
+    console.log('UseEffect triggered');
     const elementsCurr = getElements(data);
+    console.log(elementsCurr);
 
     setElements([]);
     setElements(elementsCurr);
   }, [data]);
-
 
   //const elements = getElements(data);
 
@@ -328,49 +306,37 @@ const NodeLink = (props) => {
       });
   };
 
-  const generateNodeId = (() => {
-  let counter = 0;
-
-  return () => {
-    counter++;
-    return counter;
-  };
-})();
-
-const handleSelectArticle = (article) => {
-  setSelectedArticles((prevSelectedArticles) => [...prevSelectedArticles, article]);
-
-  setElements((prevElements) => {
-    const newElements = [...prevElements];
-
-    // Create a new node representing the selected article
+  const handleSelectArticle = (article) => {
+    const newSelectedArticles = [...selectedArticles, article];
+    setSelectedArticles(newSelectedArticles);
+  
+    console.log(newSelectedArticles);
+    console.log(selectedArticles);
+    const newNodeId = -(selectedArticles.length - 1); // calculate unique ID for the new node
     const newNode = {
       data: {
-        id: generateNodeId(), // Generate a unique ID for the new node
+        id: newNodeId,
         label: article.title,
         level: 1,
-        color: "#D3D3D3", // Set the desired color for the new node
-        pageData: "", // Add the relevant data for the new node if available
-        url: article.link, // Set the URL of the article as the new node's URL
+        color: "#D3D3D3", 
+        pageData: "",
+        url: article.link,
       },
       classes: ["level1"],
     };
-
-    // Create a new edge connecting the new node to the "My Interests" node
+  
     const newEdge = {
       data: {
-        source: -1, // ID of the "My Interests" node
-        target: newNode.data.id,
-        color: "#D3D3D3", // Set the desired color for the new edge
+        source: -1, 
+        target: newNodeId,
+        color: "#D3D3D3",
       },
       classes: ["level1"],
     };
-
-    newElements.push(newNode, newEdge);
-
-    return newElements;
-  });
-};
+  
+    elements.push(newNode, newEdge);
+    console.log(elements); 
+  };
  
   return (
     <>
@@ -396,7 +362,7 @@ const handleSelectArticle = (article) => {
                 contentStyle: {},
                 select: function (ele) {
                   handleOpenModal();
-                  console.log(articles);
+                  //console.log(articles);
                 },
                 enabled: true,
               },
@@ -671,7 +637,7 @@ const handleSelectArticle = (article) => {
         }}
       />
       <Dialog open={modalOpen} onClose={handleCloseModal}>
-        <DialogTitle>Please enter a keyword to search for relevant articles:</DialogTitle>
+        <DialogTitle>Please enter an interest that you want to add:</DialogTitle>
         <DialogContent>
           <TextField id="keywordInput" type="text" value={keyword} onChange={handleKeywordChange} fullWidth />
           <Button variant="contained" onClick={handleSearchArticles} color="primary">
@@ -691,15 +657,6 @@ const handleSelectArticle = (article) => {
           </Button>
         </DialogActions>
       </Dialog>
-      {selectedArticles.map((article, index) => (
-        <div key={index}>
-          <h2>Selected Article {index + 1}:</h2>
-          <p>Title: {article.title}</p>
-          <p>
-            Link: <a href={article.link}>{article.link}</a>
-          </p>
-        </div>
-      ))}
     </>
   );
 };
