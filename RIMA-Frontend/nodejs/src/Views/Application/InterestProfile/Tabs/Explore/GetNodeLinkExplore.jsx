@@ -307,37 +307,59 @@ const NodeLink = (props) => {
   };
 
   const handleSelectArticle = (article) => {
-    const newSelectedArticles = [...selectedArticles, article];
-    setSelectedArticles(newSelectedArticles);
+    const isDuplicate = selectedArticles.some(
+      (selectedArticle) => selectedArticle.title === article.title
+    );
   
-    console.log(newSelectedArticles);
-    console.log(selectedArticles);
-    const newNodeId = -(selectedArticles.length - 1); // calculate unique ID for the new node
-    const newNode = {
-      data: {
-        id: newNodeId,
-        label: article.title,
-        level: 1,
-        color: "#D3D3D3", 
-        pageData: "",
-        url: article.link,
-      },
-      classes: ["level1"],
-    };
+    if (isDuplicate) {
+      const message = "You have already added " + article.title + " to your interests";
+      toast.error(message, {
+        toastId: "duplicateInterest",
+        containerId: "toastContainer",
+        className: "custom-toast-error",
+      });
+      return;
+    } else {
+      const newSelectedArticles = [...selectedArticles, article];
+      setSelectedArticles(newSelectedArticles);
   
-    const newEdge = {
-      data: {
-        source: -1, 
-        target: newNodeId,
-        color: "#D3D3D3",
-      },
-      classes: ["level1"],
-    };
+      console.log(newSelectedArticles);
+      console.log(selectedArticles);
   
-    elements.push(newNode, newEdge);
-    console.log(elements); 
+      const newNodeId = -2 - selectedArticles.length;
+      const newNode = {
+        data: {
+          id: newNodeId,
+          label: article.title,
+          level: 1,
+          color: "#808080",
+          pageData: "",
+          url: article.link,
+        },
+        classes: ["level1"],
+        style: {
+          width: 155,
+          height: 155,
+          shape: "roundrectangle",
+          opacity: "0.8",
+        },
+      };
+
+      const newEdge = {
+        data: {
+          source: -1,
+          target: newNodeId,
+          color: "#808080",
+        },
+        classes: ["level1"],
+      };
+
+      elements.push(newNode, newEdge);
+      
+      console.log(elements);
+    }
   };
- 
+
   return (
     <>
       <CytoscapeComponent
@@ -645,7 +667,10 @@ const NodeLink = (props) => {
           </Button>
           <List>
             {articles.map((article, index) => (
-              <ListItem button key={index} onClick={() => handleSelectArticle(article)}>
+              <ListItem button key={index} onClick={() => {
+                handleSelectArticle(article);
+                handleCloseModal();
+              }}>
                 <ListItemText primary={article.title} />
               </ListItem>
             ))}
