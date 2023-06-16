@@ -484,6 +484,39 @@ const NodeLink = (props) => {
                   // whether the command is selectable
               },
               {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  let currInterest = ele.data()["label"];
+                  let msg = "The interest " + currInterest + " has been removed";
+                  toast.error(msg, { toastId: "removedLevel2" });
+              
+                  ele.animate({
+                    style: { opacity: 0, width: 0, height: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      ele.addClass("collapsed");
+                      ele.remove();
+                    }
+                  });
+              
+                  let edges = ele.connectedEdges();
+              
+                  edges.animate({
+                    style: { opacity: 0, width: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      edges.remove();
+                    }
+                  });
+                },
+                enabled: true
+              },              
+              {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
                 select: function (ele) {
@@ -621,6 +654,39 @@ const NodeLink = (props) => {
 
                 // whether the command is selectable
               },
+              {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  let currInterest = ele.data()["label"];
+                  let msg = "The interest " + currInterest + " has been removed";
+                  toast.error(msg, { toastId: "removedLevel2" });
+              
+                  ele.animate({
+                    style: { opacity: 0, width: 0, height: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      ele.addClass("collapsed");
+                      ele.remove();
+                    }
+                  });
+              
+                  let edges = ele.connectedEdges();
+              
+                  edges.animate({
+                    style: { opacity: 0, width: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      edges.remove();
+                    }
+                  });
+                },
+                enabled: true
+              }, 
               {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
