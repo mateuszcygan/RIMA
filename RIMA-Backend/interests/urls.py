@@ -52,5 +52,7 @@ urlpatterns = [
     path('regenerate-interest-profile/', views.regenerateInterestProfile.as_view()),
     
     path('get-connect-data', views.get_data_connect),
-    path('get-wiki-info', views.get_wiki_data)
+    path('get-wiki-info', views.get_wiki_data),
+    
+    path('get-articles-related', views.get_related_articles)
 ]
