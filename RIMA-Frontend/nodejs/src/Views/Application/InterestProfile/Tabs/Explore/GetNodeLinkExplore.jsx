@@ -9,6 +9,7 @@ import WikiDesc from "../Connect/WikiDesc";
 import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RestAPI from "../../../../../Services/api";
+import { selector } from "d3";
 
 cytoscape.use(cxtmenu);
 
@@ -383,9 +384,14 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph).run();
 
           cy.fit();
-          cy.on('mouseover', (event) => {
-            if(event.cy.container()) {
-              event.cy.container().style.cursor = 'pointer';
+          cy.on('mouseover','node', (event) => {  
+            if(event.cy.container('node')) {
+              event.cy.container('node').style.cursor = 'pointer';
+            }
+          })
+          cy.on('mouseout','node', (event) => {
+            if(event.cy.container('node')) {
+              event.cy.container('node').style.cursor = 'default';
             }
           })
 
