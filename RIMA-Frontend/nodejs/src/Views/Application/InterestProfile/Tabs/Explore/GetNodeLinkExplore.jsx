@@ -289,7 +289,7 @@ const NodeLink = (props) => {
     setKeyword(event.target.value);
   };
 
-    const handleSearchArticles = () => {
+/*     const handleSearchArticles = () => {
     const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3`;
   
     fetch(url)
@@ -304,7 +304,33 @@ const NodeLink = (props) => {
       .catch((error) => {
         console.error(error);
       });
-  }; 
+  };  */
+
+  const handleSearchArticles = () => {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
+
+    const script = document.createElement('script');
+    script.src = url;
+    document.head.appendChild(script);
+  };
+
+/*   const handleResponse = (data) => {
+    const fetchedArticles = data.query.search.map((article) => ({
+      title: article.title,
+      link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+    }));
+    setArticles(fetchedArticles);
+  }; */
+
+  useEffect(() => {
+    window.handleResponse = (data) => {
+      const fetchedArticles = data.query.search.map((article) => ({
+        title: article.title,
+        link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+      }));
+      setArticles(fetchedArticles);
+    };
+  }, []);
 
   /*  const handleSearchArticles = () => {
     RestAPI.getRelatedArticles(keyword, 3)
