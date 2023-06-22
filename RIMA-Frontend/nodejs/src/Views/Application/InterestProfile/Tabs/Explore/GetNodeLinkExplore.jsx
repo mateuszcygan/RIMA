@@ -307,11 +307,21 @@ const NodeLink = (props) => {
   };  */
 
   const handleSearchArticles = () => {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
+    if (keyword.trim() === '') {
+      toast.error('Your input field is empty', {
+        toastId: 'emptyInput',
+        containerId: 'toastContainer',
+        className: 'custom-toast-error',
+        autoClose: 3000, // 3 seconds
+      });
+      return; // Stop further execution
+    } else {
+      const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
 
-    const script = document.createElement('script');
-    script.src = url;
-    document.head.appendChild(script);
+      const script = document.createElement('script');
+      script.src = url;
+      document.head.appendChild(script);
+    }
   };
 
 /*   const handleResponse = (data) => {
@@ -581,51 +591,70 @@ const NodeLink = (props) => {
             selector: "node[level=1]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
-            commands: [
-              // an array of commands to list in the menu or a function that returns the array
+            commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
+              const id = ele.data("id");
 
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Learn more", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
-                  handleOpenLearn(ele); // `ele` holds the reference to the active element
-                },
-                enabled: true // whether the command is selectable
-              },
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Expand", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  //let id = ele.id()
-                  //let node = ele.target;
-                  ele.removeClass("expandable");
-                  let succ = ele.successors().targets();
+              if (id >= -1) {
+                // For nodes with id >= -1
+                return [
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Learn more", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
+                      handleOpenLearn(ele); // `ele` holds the reference to the active element
+                    },
+                    enabled: true // whether the command is selectable
+                  },
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Expand", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      //let id = ele.id()
+                      //let node = ele.target;
+                      ele.removeClass("expandable");
+                      let succ = ele.successors().targets();
 
-                  succ.map((s) => {
-                    s.removeClass("collapsed");
-                  }); // `ele` holds the reference to the active element
-                },
-                enabled: false
+                      succ.map((s) => {
+                        s.removeClass("collapsed");
+                      }); // `ele` holds the reference to the active element
+                    },
+                    enabled: false
 
-                // whether the command is selectable
-              },
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Add to my interests", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
-                  // `ele` holds the reference to the active element
-                },
-                enabled: false // whether the command is selectable
+                    // whether the command is selectable
+                  },
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Add to my interests", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
+                      // `ele` holds the reference to the active element
+                    },
+                    enabled: false // whether the command is selectable
+                  }
+                ];
+               } else {
+                // For nodes with id < -1
+                return [
+                  {
+                    content: "Learn more",
+                    select: function (ele) {},
+                    enabled: false,
+                  },
+                  {
+                    content: "Expand",
+                    select: function (ele) {},
+                    enabled: false,
+                  },
+                ];
               }
-            ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
+            },
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
