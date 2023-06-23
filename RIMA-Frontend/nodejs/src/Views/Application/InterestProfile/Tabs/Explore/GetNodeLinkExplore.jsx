@@ -197,7 +197,6 @@ const NodeLink = (props) => {
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
-    console.log('UseEffect triggered');
     const elementsCurr = getElements(data);
     console.log(elementsCurr);
 
@@ -289,23 +288,6 @@ const NodeLink = (props) => {
     setKeyword(event.target.value);
   };
 
-/*     const handleSearchArticles = () => {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3`;
-  
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        const fetchedArticles = data.query.search.map((article) => ({
-          title: article.title,
-          link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
-        }));
-        setArticles(fetchedArticles);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };  */
-
   const handleSearchArticles = () => {
     if (keyword.trim() === '') {
       toast.error('Your input field is empty', {
@@ -324,14 +306,6 @@ const NodeLink = (props) => {
     }
   };
 
-/*   const handleResponse = (data) => {
-    const fetchedArticles = data.query.search.map((article) => ({
-      title: article.title,
-      link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
-    }));
-    setArticles(fetchedArticles);
-  }; */
-
   useEffect(() => {
     window.handleResponse = (data) => {
       const fetchedArticles = data.query.search.map((article) => ({
@@ -341,20 +315,6 @@ const NodeLink = (props) => {
       setArticles(fetchedArticles);
     };
   }, []);
-
-  /*  const handleSearchArticles = () => {
-    RestAPI.getRelatedArticles(keyword, 3)
-      .then((data) => {
-        const fetchedArticles = data.map((article) => ({
-          title: article.title,
-          link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
-        }));
-        setArticles(fetchedArticles);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };  */
 
   const handleSelectArticle = (article) => {
     const isDuplicate = selectedArticles.some(
@@ -390,7 +350,7 @@ const NodeLink = (props) => {
         style: {
           width: 155,
           height: 155,
-          shape: "roundrectangle",
+          shape: "ellipse",
           opacity: "0.8",
         },
       };
@@ -568,7 +528,16 @@ const NodeLink = (props) => {
                   }); // `ele` holds the reference to the active element
                 },
                 enabled: true // whether the command is selectable
-              }
+              },
+              /* {
+                content: "test ele.data()",
+                contentStyle: {},
+                select: function (ele) {
+                  const data = ele.data();
+                  console.log(data);
+                },
+                enabled: true,
+              } */
             ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -624,7 +593,6 @@ const NodeLink = (props) => {
                       }); // `ele` holds the reference to the active element
                     },
                     enabled: false
-
                     // whether the command is selectable
                   },
                   {
@@ -637,21 +605,77 @@ const NodeLink = (props) => {
                       // `ele` holds the reference to the active element
                     },
                     enabled: false // whether the command is selectable
-                  }
+                  },
+                  /* {
+                    content: "test ele.data()",
+                    contentStyle: {},
+                    select: function (ele) {
+                      const data = ele.data();
+                      console.log(data);
+                    },
+                    enabled: true,
+                  } */
                 ];
                } else {
                 // For nodes with id < -1
                 return [
-                  {
+                  /* {
                     content: "Learn more",
                     select: function (ele) {},
                     enabled: false,
-                  },
+                  }, */
                   {
                     content: "Expand",
-                    select: function (ele) {},
-                    enabled: false,
+                    contentStyle: {},
+                    select: function (ele) {
+                      let succ = ele.successors().targets();
+                      let edges = ele.successors();
+    
+                      edges.style("opacity", 0)
+                      .animate({
+                        style: { opacity: 1 },
+                        duration: 600,
+                        easing: "ease-in-sine",
+                        queue: false
+                      });
+                  
+                      succ.style("opacity", 0)
+                        .animate({
+                          style: { opacity: 1 },
+                          duration: 600,
+                          easing: "ease-in-sine",
+                          queue: false
+                        });
+    
+                        
+                  
+                    let ids = [];
+                    edges.map((e) => {
+                      e.removeClass("collapsed");
+                      ids.push(
+                        e.data()["target"],
+                        e.data()["source"],
+                        e.data()["id"]
+                      );
+                      console.log(ids, "test");
+                    });
+    
+                    /*succ.map((s) => {
+                      s.removeClass("collapsed");
+                    });*/
+                    cy.fit([ele, succ, edges], 16);
                   },
+                  enabled: true
+                },
+                /* {
+                  content: "test ele.data()",
+                  contentStyle: {},
+                  select: function (ele) {
+                    const data = ele.data();
+                    console.log(data);
+                  },
+                  enabled: true,
+                } */
                 ];
               }
             },
@@ -794,7 +818,7 @@ const NodeLink = (props) => {
         }}
       />
       <Dialog open={modalOpen} onClose={handleCloseModal}>
-        <DialogTitle>Please enter an interest that you want to add:</DialogTitle>
+        <DialogTitle>Please enter an interest that you would like to add:</DialogTitle>
         <DialogContent>
           <TextField id="keywordInput" type="text" value={keyword} onChange={handleKeywordChange} fullWidth />
           <Button variant="contained" onClick={handleSearchArticles} color="primary">

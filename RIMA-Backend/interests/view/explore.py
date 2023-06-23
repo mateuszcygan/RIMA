@@ -60,7 +60,7 @@ def getPageData(interest):
 
 
 #start functions for explore.py
-def getLinksTextInPage(interest):
+def getLinksTextInPage(interest): #retreives multiple links
     wiki=wikipediaapi.Wikipedia('en')
     page=wiki.page(interest)
 
@@ -126,7 +126,7 @@ def getDataExplore(interests):
     return data
 
 
-def getRelatedArticles(keyword, num_articles=3):
+""" def getRelatedArticles(keyword, num_articles=3):
     wiki_wiki = wikipediaapi.Wikipedia('en')
 
     page = wiki_wiki.page(keyword)
@@ -146,4 +146,4 @@ def getRelatedArticles(keyword, num_articles=3):
             }
             related_articles.append(article_data)
 
-    return related_articles
+    return related_articles """

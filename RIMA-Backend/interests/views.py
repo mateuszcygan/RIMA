@@ -296,12 +296,6 @@ class PaperView(ListCreateAPIView):
         FetchUserPapers
         return Response({})
 
-@api_view(["POST"])
-def get_related_articles(request, *args, **kwargs):
-    related_articles = getRelatedArticles(request.data, request.data)
-
-    return Response({"message": "Successful", "data": related_articles})
-
 class PaperItemView(RetrieveUpdateDestroyAPIView):
     serializer_class = PaperSerializer
 
