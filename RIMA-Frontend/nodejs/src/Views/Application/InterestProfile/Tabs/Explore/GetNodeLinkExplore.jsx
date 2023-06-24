@@ -127,6 +127,27 @@ function getElements(data) {
             classes: ["collapsed", "level3"]
           };
           elements.push(element, edge);
+
+          relatedTopics.map((n) => {
+            let idLevel4 = ids.pop();
+            label = n.title;
+            element = {
+              data: {
+                id: idLevel4,
+                label: label,
+                level: 4,
+                color: color,
+                pageData: n.summary,
+                url: n.wikiURL
+              },
+              classes: ["collapsed1", "level4"]
+            };
+            edge = {
+              data: {target: idLevel4, source: idLevel3, color: color},
+              classes: ["collapsed1", "level4"]
+            }; 
+            elements.push(element, edge);
+          });
         });
       });
     })
@@ -319,6 +340,12 @@ const NodeLink = (props) => {
       }
     },
     {
+      selector: ".collapsed1",
+      style: {
+        display: "none"
+      }
+    },
+    {
       selector: ".level1",
       style: {
         "line-color": "data(color)",
@@ -337,6 +364,13 @@ const NodeLink = (props) => {
       style: {
         "background-opacity": 0.4,
         "line-color": "data(color)"
+      }
+    },
+    {
+      selector: ".level4",
+      style: {
+        "background-opacity": 0.3,
+        "line-color": "data(color)",
       }
     }   
   ];
@@ -818,14 +852,31 @@ const NodeLink = (props) => {
                 select: function (ele) {
                   //let id = ele.id()
                   //let node = ele.target;
-                  ele.removeClass("expandable");
+                  //ele.removeClass("expandable");
+                  //let succ = ele.successors().targets();
+
+                  //succ.map((s) => {
+                    //s.removeClass("collapsed");
+                  //}); // `ele` holds the reference to the active element
                   let succ = ele.successors().targets();
+                  let edges = ele.successors();
+                  let ids = [];
+                  edges.map((e) => {
+                    e.removeClass("collapsed1");
+                    ids.push(
+                      e.data()["target"],
+                      e.data()["source"],
+                      e.data()["id"]
+                    );
+                    console.log(ids, "test");
+                  });
 
                   succ.map((s) => {
-                    s.removeClass("collapsed");
-                  }); // `ele` holds the reference to the active element
+                    s.removeClass("collapsed1");
+                  })
+                  cy.fit([ele, succ, edges], 16);
                 },
-                enabled: false
+                enabled: true
 
                 // whether the command is selectable
               },
@@ -897,6 +948,80 @@ const NodeLink = (props) => {
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
+          let defaultsLevel4 = {
+            selector: "node[level=4]",
+            menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
+            //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
+            commands: [
+              // an array of commands to list in the menu or a function that returns the array
+
+              {
+                // example command
+                // optional: custom background color for item
+                content: "Learn more", // html/text content to be displayed in the menu
+                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                select: function (ele) {
+                  // a function to execute when the command is selected
+                  handleOpenLearn(ele); // `ele` holds the reference to the active element
+                },
+                enabled: true // whether the command is selectable
+              },
+              {
+                // example command
+                // optional: custom background color for item
+                content: "Expand", // html/text content to be displayed in the menu
+                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                select: function (ele) {
+                  //let id = ele.id()
+                  //let node = ele.target;
+                  ele.removeClass("expandable");
+                  let succ = ele.successors().targets();
+
+                  succ.map((s) => {
+                    s.removeClass("collapsed");
+                  });
+                   
+                  // `ele` holds the reference to the active element
+                },
+                enabled: false // whether the command is selectable
+              },
+              {
+                // example command
+                // optional: custom background color for item
+                content: "Add to my interests", // html/text content to be displayed in the menu
+                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                select: function (ele) {
+                  // a function to execute when the command is selected
+                  let currInterest = ele.data()["label"];
+                  addNewInterest(currInterest);
+                  let msg =
+                      "The interest " +
+                      currInterest +
+                      " has added to your interests";
+                  toast.success(msg, {
+                    toastId: "addLevel2"
+                  });
+                  // `ele` holds the reference to the active element
+                },
+                enabled: true // whether the command is selectable
+              }
+            ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
+            fillColor: "black", // the background colour of the menu
+            activeFillColor: "green", // the colour used to indicate the selected command
+            activePadding: 8, // additional size in pixels for the active command
+            indicatorSize: 24, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
+            separatorWidth: 3, // the empty spacing in pixels between successive commands
+            spotlightPadding: 8, // extra spacing in pixels between the element and the spotlight
+            adaptativeNodeSpotlightRadius: true, // specify whether the spotlight radius should adapt to the node size
+            //minSpotlightRadius: 24, // the minimum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+            //maxSpotlightRadius: 38, // the maximum radius in pixels of the spotlight (ignored for the node if adaptativeNodeSpotlightRadius is enabled but still used for the edge & background)
+            openMenuEvents: "tap taphold", // space-separated cytoscape events that will open the menu; only `cxttapstart` and/or `taphold` work here
+            itemColor: "white", // the colour of text in the command's content
+            itemTextShadowColor: "transparent", // the text shadow colour of the command's content
+            zIndex: 9999, // the z-index of the ui div
+            atMouse: false, // draw menu at mouse position
+            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+          }
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
