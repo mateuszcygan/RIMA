@@ -529,16 +529,7 @@ const NodeLink = (props) => {
                   handleOpenLearn(ele); // `ele` holds the reference to the active element
                 },
                 enabled: true // whether the command is selectable
-              },
-              {//DELETE INTEREST NEU
-                content: "Delete",
-                select: function (ele) {
-                  const interest = ele.data(); // Get the interest data
-                  deleteInterest(interest); // Call the deleteInterest function
-                },
-                enabled: true
-              },
-              
+              },   
               {
                 content: "Expand",
                 contentStyle: {},
@@ -819,7 +810,6 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
-              {content: "Delete"},
               {
                 // example command
 
