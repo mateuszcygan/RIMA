@@ -60,7 +60,7 @@ def getPageData(interest):
 
 
 #start functions for explore.py
-def getLinksTextInPage(interest):
+def getLinksTextInPage(interest): #retreives multiple links
     wiki=wikipediaapi.Wikipedia('en')
     page=wiki.page(interest)
 
@@ -80,8 +80,8 @@ def getCountLinks(links, text, topN=3):
 
 def getDataNewInterestExplore(interest):
     print(interest, "test test")
-    links, text = getLinksTextInPage(interest.capitalize())
-    top3Interests=getCountLinks(links, text)
+    links, text = getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
+    top3Interests=getCountLinks(links, text) #3 top related pages are returned
 
     relatedTopics=[]
     for i in top3Interests:
@@ -107,20 +107,19 @@ def getDataNewInterestExplore(interest):
     return data
 
 def getDataExplore(interests):
-    """
-    data=[]
+    """ data=[]
     for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
         time.sleep(1)
         data.append(currData)
-        print(data, "data interest")
+        print(data, "data interest") """
     
-    with open("data.json", "w") as myfile:
-        json.dump(data, myfile)
-    """        
+    """ with open("data.json", "w") as myfile:
+        json.dump(data, myfile)    
+    """
+    
     with open("data.json", "r") as myfile:
         data = json.load(myfile)
-    
-    return data
 
+    return data

@@ -296,7 +296,6 @@ class PaperView(ListCreateAPIView):
         FetchUserPapers
         return Response({})
 
-
 class PaperItemView(RetrieveUpdateDestroyAPIView):
     serializer_class = PaperSerializer
 

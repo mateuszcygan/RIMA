@@ -1,8 +1,9 @@
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
 import React, {useEffect, useState} from "react"
+//import './cytoscape.css';
 
-import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@material-ui/core";
+import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions } from '@material-ui/core';
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
 import WikiDesc from "../Connect/WikiDesc";
@@ -53,10 +54,12 @@ function getColor(currColors, colors) {
 function getElements(data) {
   let ids = [...Array(200).keys()];
   let elements = [
-    {data: {id: -1, label: "My Interests", level: 0, color: "black"}} //from this node we want to add 'Add own interests' button
+    {data: {id: -1, label: "My Interests", level: 0, color: "black"}}
   ];
+  
   let currColors = [];
-  try{
+  console.log(elements);
+  try {
     data.map((d) => {
       let colors = getColor(currColors, colorPalette);
       currColors = colors[1];
@@ -127,14 +130,11 @@ function getElements(data) {
         });
       });
     })
-
   } catch{
     elements = [
       {data: {id: -1, label: "Sorry, an error occurred.", level: 0, color: "red"}}
     ];
-  }
-
-  ;
+  };
 
   return [elements, currColors];
   
@@ -263,45 +263,16 @@ const NodeLink = (props) => {
      console.log("Interest already exists in my list!")
   }*/
 
-  const promptForURL = () => {
-    let ownInterest = prompt("Please give a Wikipedia URL to interest that you want to add", "");
-    alert(ownInterest);
-  }
-
-  /*
-  function sendInputValue(wikiUrl) {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/process-wikiurl", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.onreadystatechange = function () {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        console.log("Request sent successfully.");
-      } else {
-        console.error("Failed to send request.");
-      }
-    }
-  };
-  
-
-  const data = JSON.stringify({ wikiUrl });
-  xhr.send(data);
-}
-*/
-
-
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
     colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    //getColor(elementsCurr[1], colorPalette);
+    console.log(elementsCurr);
 
     setElements([]);
     setElements(elementsCurr[0]);
   }, [data, NodeLink.colors]);
-
 
   //const elements = getElements(data);
 
@@ -370,7 +341,122 @@ const NodeLink = (props) => {
     }   
   ];
 
- return (
+  const [modalOpen, setModalOpen] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [articles, setArticles] = useState([]);
+  const [selectedArticles, setSelectedArticles] = useState([]);
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleKeywordChange = (event) => {
+    setKeyword(event.target.value);
+  };
+
+  const handleSearchArticles = () => {
+    if (keyword.trim() === '') {
+      toast.error('Your input field is empty', {
+        toastId: 'emptyInput',
+        containerId: 'toastContainer',
+        className: 'custom-toast-error',
+        autoClose: 3000, // 3 seconds
+      });
+      return; // Stop further execution
+    } else {
+      const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
+
+      const script = document.createElement('script');
+      script.src = url;
+      document.head.appendChild(script);
+    }
+  };
+
+  useEffect(() => {
+    window.handleResponse = (data) => {
+      const fetchedArticles = data.query.search.map((article) => ({
+        title: article.title,
+        link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+      }));
+      setArticles(fetchedArticles);
+    };
+  }, []);
+
+  const handleSelectArticle = (article) => {
+    const isDuplicate = selectedArticles.some(
+      (selectedArticle) => selectedArticle.title === article.title
+    );
+  
+    if (isDuplicate) {
+      const message = "You have already added " + article.title + " to your interests";
+      toast.error(message, {
+        toastId: "duplicateInterest",
+        containerId: "toastContainer",
+        className: "custom-toast-error",
+      });
+      return;
+    } else {
+      const newSelectedArticles = [...selectedArticles, article];
+      setSelectedArticles(newSelectedArticles);
+  
+      console.log(newSelectedArticles);
+      console.log(selectedArticles);
+  
+      const newNodeId = -2 - selectedArticles.length;
+      const newNode = {
+        data: {
+          id: newNodeId,
+          label: article.title,
+          level: 1,
+          color: "#808080",
+          pageData: "",
+          url: article.link,
+        },
+        classes: ["level1"],
+        style: {
+          width: 155,
+          height: 155,
+          shape: "ellipse",
+          opacity: "0.8",
+        },
+      };
+
+      const newEdge = {
+        data: {
+          source: -1,
+          target: newNodeId,
+          color: "#808080",
+        },
+        classes: ["level1"],
+      };
+
+      elements.push(newNode, newEdge);
+      
+      console.log(elements);
+    }
+  };
+
+  //similar function needed
+/*   const getRelatedForManuals = async (target)=>{
+
+    const relatedForManuals={"interest":target}
+    const response = await RestAPI.getDataNewInterestExplore(dataPage)
+
+    const {data} = response
+
+    const pageData={
+        pageData:data.data.summary,
+        url:data.data.url
+    }
+
+    setCurrPageData(pageData)
+} */
+
+  return (
     <>
       <CytoscapeComponent
         style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}} //creating space for nodes (rectangle)
@@ -397,55 +483,17 @@ const NodeLink = (props) => {
 
           let defaultsLevel0 = {
             selector: "node[level=0]",
-            menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
-            //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
+            menuRadius: 75,
             commands: [
               {
-                content: "Add own interest", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                content: "Add own interest",
+                contentStyle: {},
                 select: function (ele) {
-                  const modal = document.getElementById("modal");
-                  modal.style.display = "block";
-
-                  const submitButton = document.getElementById("submitButton");
-                  const cancelButton = document.getElementById("cancelButton");
-
-                  /*
-                  submitButton.addEventListener("click", function () {
-                    const wikiUrl = document.getElementById("wikiUrlInput").value;
-                    modal.style.display = "none";
-                  });
-                  */
-
-                  submitButton.addEventListener("click", function () {
-                    const wikiUrl = document.getElementById("wikiUrlInput").value;
-                    modal.style.display = "none";
-                  
-                    // Send an HTTP POST request to the Python file
-                    fetch('http://localhost:8000/server.py', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ wikiUrl }),
-                    })
-                      .then(response => response.json())
-                      .then(data => {
-                        // Handle the response from the Python file if needed
-                        console.log(data);
-                      })
-                      .catch(error => {
-                        // Handle any errors
-                        console.error('Error:', error);
-                      });
-                  });                  
-
-                  cancelButton.addEventListener("click", function () {
-                    modal.style.display = "none";
-                  });
+                  handleOpenModal();
+                  //console.log(articles);
                 },
                 enabled: true,
-              }
+              },
             ],
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -492,57 +540,83 @@ const NodeLink = (props) => {
               },
               
               {
-                content: "Expand", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                content: "Expand",
+                contentStyle: {},
                 select: function (ele) {
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
-                  let ids = [];
-                  edges.forEach((e) => {
-                    const targetId = e.data()["target"];
-                    const sourceId = e.data()["source"];
-                    const edgeId = e.data()["id"];
-                
-                    // Check if the IDs already exist in the array
-                    const targetExists = ids.includes(targetId);
-                    const sourceExists = ids.includes(sourceId);
-                    const edgeExists = ids.includes(edgeId);
-                
-                    // Push the IDs to the array if they don't already exist
-                    if (!targetExists) ids.push(targetId);
-                    if (!sourceExists) ids.push(sourceId);
-                    if (!edgeExists) ids.push(edgeId);
-                
-                    e.removeClass("collapsed");
+
+                  edges.style("opacity", 0)
+                  .animate({
+                    style: { opacity: 1 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false
                   });
-                
-                  cy.fit([ele, succ, edges], 16);
-                }
-                
-                /*select: function (ele) {
-                  let succ = ele.successors().targets();
-                  let edges = ele.successors();
-                  let ids = [];
-                  edges.map((e) => {
-                    e.removeClass("collapsed");
-                    ids.push(
-                      e.data()["target"],
-                      e.data()["source"],
-                      e.data()["id"]
-                    );
-                    console.log(ids, "test");
-                  });
+              
+                  succ.style("opacity", 0)
+                    .animate({
+                      style: { opacity: 1 },
+                      duration: 600,
+                      easing: "ease-in-sine",
+                      queue: false
+                    });
 
-                  /*succ.map((s) => {
-                    s.removeClass("collapsed");
-                  });*/
-                  //cy.fit([ele, succ, edges], 16);
-                //}
+                    
+              
+                let ids = [];
+                edges.map((e) => {
+                  e.removeClass("collapsed");
+                  ids.push(
+                    e.data()["target"],
+                    e.data()["source"],
+                    e.data()["id"]
+                  );
+                  console.log(ids, "test");
+                });
 
-                ,enabled: true
-
-                // whether the command is selectable
+                /*succ.map((s) => {
+                  s.removeClass("collapsed");
+                });*/
+                cy.fit([ele, succ, edges], 16);
               },
+              enabled: true
+  
+                  // whether the command is selectable
+              },
+              {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  let currInterest = ele.data()["label"];
+                  let msg = "The interest " + currInterest + " has been removed";
+                  toast.error(msg, { toastId: "removedLevel2" });
+              
+                  ele.animate({
+                    style: { opacity: 0, width: 0, height: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      ele.addClass("collapsed");
+                      ele.remove();
+                    }
+                  });
+              
+                  let edges = ele.connectedEdges();
+              
+                  edges.animate({
+                    style: { opacity: 0, width: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      edges.remove();
+                    }
+                  });
+                },
+                enabled: true
+              },              
               {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
@@ -559,7 +633,16 @@ const NodeLink = (props) => {
                   }); // `ele` holds the reference to the active element 
                 },
                 enabled: true // whether the command is selectable
-              }
+              },
+              /* {
+                content: "test ele.data()",
+                contentStyle: {},
+                select: function (ele) {
+                  const data = ele.data();
+                  console.log(data);
+                },
+                enabled: true,
+              } */
             ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -582,58 +665,125 @@ const NodeLink = (props) => {
             selector: "node[level=1]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
-            commands: [
-              // an array of commands to list in the menu or a function that returns the array
+            commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
+              const id = ele.data("id");
 
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Learn more", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
-                  handleOpenLearn(ele); // `ele` holds the reference to the active element
-                },
-                enabled: true // whether the command is selectable
-              },
-              {//DELETE INTEREST NEU
-                content: "Delete",
-                select: function (ele) {
-                  const interest = ele.data(); // Get the interest data
-                  deleteInterest(interest); // Call the deleteInterest function
-                },
-                enabled: true
-              }
-              ,
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Expand", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  //let id = ele.id()
-                  //let node = ele.target;
-                  ele.removeClass("expandable");
-                  let succ = ele.successors().targets();
+              if (id >= -1) {
+                // For nodes with id >= -1
+                return [
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Learn more", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
+                      handleOpenLearn(ele); // `ele` holds the reference to the active element
+                    },
+                    enabled: true // whether the command is selectable
+                  },
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Expand", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      //let id = ele.id()
+                      //let node = ele.target;
+                      ele.removeClass("expandable");
+                      let succ = ele.successors().targets();
 
-                  succ.map((s) => {
-                    s.removeClass("collapsed");
-                  }); // `ele` holds the reference to the active element
+                      succ.map((s) => {
+                        s.removeClass("collapsed");
+                      }); // `ele` holds the reference to the active element
+                    },
+                    enabled: false
+                    // whether the command is selectable
+                  },
+                  {
+                    // example command
+                    // optional: custom background color for item
+                    content: "Add to my interests", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
+                      // `ele` holds the reference to the active element
+                    },
+                    enabled: false // whether the command is selectable
+                  },
+                  /* {
+                    content: "test ele.data()",
+                    contentStyle: {},
+                    select: function (ele) {
+                      const data = ele.data();
+                      console.log(data);
+                    },
+                    enabled: true,
+                  } */
+                ];
+               } else {
+                // For nodes with id < -1
+                return [
+                  /* {
+                    content: "Learn more",
+                    select: function (ele) {},
+                    enabled: false,
+                  }, */
+                  {
+                    content: "Expand",
+                    contentStyle: {},
+                    select: function (ele) {
+                      let succ = ele.successors().targets();
+                      let edges = ele.successors();
+    
+                      edges.style("opacity", 0)
+                      .animate({
+                        style: { opacity: 1 },
+                        duration: 600,
+                        easing: "ease-in-sine",
+                        queue: false
+                      });
+                  
+                      succ.style("opacity", 0)
+                        .animate({
+                          style: { opacity: 1 },
+                          duration: 600,
+                          easing: "ease-in-sine",
+                          queue: false
+                        });
+    
+                        
+                  
+                    let ids = [];
+                    edges.map((e) => {
+                      e.removeClass("collapsed");
+                      ids.push(
+                        e.data()["target"],
+                        e.data()["source"],
+                        e.data()["id"]
+                      );
+                      console.log(ids, "test");
+                    });
+    
+                    /*succ.map((s) => {
+                      s.removeClass("collapsed");
+                    });*/
+                    cy.fit([ele, succ, edges], 16);
+                  },
+                  enabled: true
                 },
-                enabled: false // whether the command is selectable
-              },
-              {
-                // example command
-                // optional: custom background color for item
-                content: "Add to my interests", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
-                  // `ele` holds the reference to the active element
-                },
-                enabled: false // whether the command is selectable
+                /* {
+                  content: "test ele.data()",
+                  contentStyle: {},
+                  select: function (ele) {
+                    const data = ele.data();
+                    console.log(data);
+                  },
+                  enabled: true,
+                } */
+                ];
               }
-            ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
+            },
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
@@ -690,6 +840,39 @@ const NodeLink = (props) => {
                 // whether the command is selectable
               },
               {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  let currInterest = ele.data()["label"];
+                  let msg = "The interest " + currInterest + " has been removed";
+                  toast.error(msg, { toastId: "removedLevel2" });
+              
+                  ele.animate({
+                    style: { opacity: 0, width: 0, height: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      ele.addClass("collapsed");
+                      ele.remove();
+                    }
+                  });
+              
+                  let edges = ele.connectedEdges();
+              
+                  edges.animate({
+                    style: { opacity: 0, width: 0 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false,
+                    complete: function () {
+                      edges.remove();
+                    }
+                  });
+                },
+                enabled: true
+              }, 
+              {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
                 select: function (ele) {
@@ -740,31 +923,32 @@ const NodeLink = (props) => {
         })*/
         }}
       />
-      <Dialog open={openDialog.openLearn} onClose={handleCloseLearn}>
-        {openDialog.nodeObj != null ? (
-          <DialogTitle>Learn More about {openDialog.nodeObj.label}</DialogTitle>
-        ) : (
-          <DialogTitle>Learn more</DialogTitle>
-        )}
+      <Dialog open={modalOpen} onClose={handleCloseModal}>
+        <DialogTitle>Please enter an interest that you would like to add:</DialogTitle>
         <DialogContent>
-          {""}
-          <WikiDesc data={openDialog.nodeObj}/>
+          <TextField id="keywordInput" type="text" value={keyword} onChange={handleKeywordChange} fullWidth />
+          <Button variant="contained" onClick={handleSearchArticles} color="primary">
+            Search
+          </Button>
+          <List>
+            {articles.map((article, index) => (
+              <ListItem button key={index} onClick={() => {
+                handleSelectArticle(article);
+                handleCloseModal();
+              }}>
+                <ListItemText primary={article.title} />
+              </ListItem>
+            ))}
+          </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseLearn}>Close</Button>
+          <Button variant="contained" onClick={handleCloseModal} color="secondary">
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer/>
-
-      <div id="modal" style={{ display: "none", position: "fixed", zIndex: 900, top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-        <div id="modal-content" style={{ backgroundColor: "#fff", padding: "20px", maxWidth: "400px", margin: "100px auto" }}>
-          <h2>Please give a Wikipedia URL to interest that you want to add:</h2>
-          <input type="text" id="wikiUrlInput" />
-          <button id="submitButton">Submit</button>
-          <button id="cancelButton">Cancel</button>
-        </div>
-      </div>
     </>
   );
 };
+
 export default NodeLink;
