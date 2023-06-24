@@ -238,7 +238,7 @@ const Explore = (props) => {
       <Grid container>
         <Grid item xs={1}/>
         <Grid item xs={10}>
-          {data ? <NodeLink data={state.graphData} keywords={keywords}/> : <Loading/>}
+          {data ? <NodeLink data={state.graphData} keywords={keywords} setKeywords = {setKeywords}/> : <Loading/>}
         </Grid>
         <Grid item xs={1}/>
       </Grid>

@@ -1,7 +1,6 @@
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
 import React, {useEffect, useState} from "react"
-
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from "@material-ui/core";
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
@@ -9,6 +8,7 @@ import WikiDesc from "../Connect/WikiDesc";
 import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RestAPI from "../../../../../Services/api";
+import { ToastHeader } from "react-bootstrap";
 
 cytoscape.use(cxtmenu);
 
@@ -46,14 +46,16 @@ function getColor(currColors) {
   return [pickedColor, currColors];
 }
 
+
 function getElements(data) {
   let ids = [...Array(200).keys()];
   let elements = [
-    {data: {id: -1, label: "My Interests", level: 0, color: "black"}}
+    { data: { id: -1, label: "My Interests", level: 0, color: "black" } }
   ];
   let currColors = [];
-  try{
-    data.map((d) => {
+
+  try {
+    data.forEach((d) => {
       let colors = getColor(currColors);
       currColors = colors[1];
       let label = d.title;
@@ -70,81 +72,109 @@ function getElements(data) {
           url: d.url
         },
         classes: ["level1"]
+        
       };
+      
       let edge = {
-        data: {source: -1, target: idLevel1, color: color},
+        data: { source: -1, target: idLevel1, color: color },
         classes: ["level1"]
       };
       elements.push(element, edge);
 
-      explore.map((e) => {
+
+      explore.forEach((e) => {
         label = e.title;
-        //idLevel2=idTarget+1
-        let idLevel2 = ids.pop();
-        element = {
-          data: {
-            id: idLevel2,
-            label: label,
-            level: 2,
-            color: color,
-            pageData: e.summary,
-            url: e.wikiURL
-          },
-          classes: ["level2"]
-        };
-        edge = {
-          data: {target: idLevel2, source: idLevel1, color: color},
-          classes: ["level2"]
-        };
+        let isDuplicate = false;
 
-        elements.push(element, edge);
+        // Check if the label already exists in layer 1 elements
+        if (elements.some((elem) => elem.data.level === 1 && elem.data.label === label)) {
+          isDuplicate = true;
+        }
 
-        let relatedTopics = e.relatedTopics;
-
-        relatedTopics.map((r) => {
-          let idLevel3 = ids.pop();
-          label = r.title;
+        if (!isDuplicate) {
+          let idLevel2 = ids.pop();
           element = {
             data: {
-              id: idLevel3,
+              id: idLevel2,
               label: label,
-              level: 3,
+              level: 2,
               color: color,
-              pageData: r.summary,
-              url: r.wikiURL
+              pageData: e.summary,
+              url: e.wikiURL
             },
-            classes: ["collapsed", "level3"]
+            classes: ["level2"]
           };
           edge = {
-            data: {target: idLevel3, source: idLevel2, color: color},
-            classes: ["collapsed", "level3"]
+            data: { target: idLevel2, source: idLevel1, color: color },
+            classes: ["level2"]
           };
           elements.push(element, edge);
-        });
-      });
-    })
+        
 
-  } catch{
+          let relatedTopics = e.relatedTopics;
+          relatedTopics.forEach((r) => {
+            label = r.title;
+            isDuplicate = false;
+
+            // Check if the label already exists in layer 1 or layer 2 elements
+            if (elements.some((elem) => (elem.data.level === 1 || elem.data.level === 2) && elem.data.label === label)) {
+              isDuplicate = true;
+            }
+
+            if (!isDuplicate) {
+              let idLevel3 = ids.pop();
+              element = {
+                data: {
+                  id: idLevel3,
+                  label: label,
+                  level: 3,
+                  color: color,
+                  pageData: r.summary,
+                  url: r.wikiURL
+                },
+                classes: ["collapsed", "level3"]
+              };
+              edge = {
+                data: { target: idLevel3, source: idLevel2, color: color },
+                classes: ["collapsed", "level3"]
+              };
+              elements.push(element, edge);
+            }
+          });
+        }
+      });
+    });
+  } catch {
     elements = [
-      {data: {id: -1, label: "Sorry, an error occurred.", level: 0, color: "red"}}
+      { data: { id: -1, label: "Sorry, an error occurred.", level: 0, color: "red" } }
     ];
   }
-
-  ;
+  console.log(elements.filter((elem) => (elem.data.level===2)));
 
   return elements;
 }
 
+
+
+
+
+
+
+
+
+
+
 const NodeLink = (props) => {
-  const {data, keywords} = props;
+  const {data, keywords,setKeywords} = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
     openAdd: null
   });
 
+  const [interests, setInterests] = useState([])
 
-
+  
   const handleOpenLearn = (ele) => {
     const data = ele.data();
     setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
@@ -156,7 +186,39 @@ const NodeLink = (props) => {
   const validateInterest = (interests, interest) => {
     return interests.some((i) => i.text === interest.toLowerCase());
   };
-
+    const deleteInterest = async (interestText) => {
+    // Find the index of the interest in the keywords array
+    const interestIndex = keywords.findIndex(
+      (interest) => interest.text.toLowerCase() === interestText.toLowerCase()
+    );
+  
+    if (interestIndex !== -1) {
+      // Remove the interest from the keywords array
+      keywords.splice(interestIndex, 1);
+  
+      // Create a list of interests with the updated keywords array
+      const listOfInterests = keywords.map((interest) => ({
+        name: interest.text,
+        weight: interest.value,
+        id: interest.id,
+        source: interest.source,
+      }));
+  
+      console.log("Updated list", listOfInterests);
+  
+      try {
+        await RestAPI.addKeyword(listOfInterests);
+        window.location.reload();
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      console.log("Interest does not exist in the list!");
+    }
+  };
+  
+  
+  
   const addNewInterest = async (currInterest) => {
     let alreadyExist = validateInterest(keywords, currInterest);
 
@@ -271,6 +333,8 @@ const NodeLink = (props) => {
     }
   ];
 
+ 
+
   return (
     <>
       <CytoscapeComponent
@@ -285,6 +349,18 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph).run();
 
           cy.fit();
+
+
+
+
+
+
+
+
+
+
+
+
 
           let defaultsLevel2 = {
             selector: "node[level=2]",
@@ -304,6 +380,25 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+            
+            
+              {
+                
+                  content: "remove",
+                  contentStyle: {},
+                  select: function(ele) {
+                    cy.remove(ele);
+                    let currInterest = ele.data()["label"];
+                    let msg = "The interest " + currInterest + " has been removed";
+                   
+                    toast.error(msg, {
+                      toastId: "removedLevel2"
+                    });
+                  },
+                  enabled: true
+                
+              },             
+            
               {
                 content: "Expand", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
@@ -311,6 +406,7 @@ const NodeLink = (props) => {
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
                   let ids = [];
+
                   edges.map((e) => {
                     e.removeClass("collapsed");
                     ids.push(
@@ -321,7 +417,7 @@ const NodeLink = (props) => {
                     console.log(ids, "test");
                   });
 
-                  /*succ.map((s) => {
+                 /* succ.map((s) => {
                     s.removeClass("collapsed");
                   });*/
                   cy.fit([ele, succ, edges], 16);
@@ -330,6 +426,7 @@ const NodeLink = (props) => {
 
                 // whether the command is selectable
               },
+              
               {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
@@ -365,6 +462,22 @@ const NodeLink = (props) => {
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           let defaultsLevel1 = {
             selector: "node[level=1]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
@@ -383,6 +496,33 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+            
+              
+
+           
+
+             {
+                content: "delete", // html/text content to be displayed in the menu
+                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                select: function(ele) {
+                let currInterest = ele.data()["label"];
+              
+                // Display a confirmation popup
+                if (window.confirm("Are you sure you want to delete " + currInterest + "?")) {
+                  // User confirmed deletion
+                  
+                  deleteInterest(currInterest);
+                  let msg = "The interest " + currInterest + " has been deleted";
+                  toast.success(msg, { toastId: "addLevel2" });
+                  cy.layout(layoutGraph).run();
+                } else {
+                  let msg = "The interest " + currInterest + " has not been deleted";
+                  toast.success(msg, { toastId: "addLevel2" });
+                  cy.layout(layoutGraph).run();
+                }
+              }},
+              
+             
               {
                 // example command
                 // optional: custom background color for item
@@ -431,6 +571,14 @@ const NodeLink = (props) => {
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
+
+
+
+
+
+
+
+
           let defaultsLevel3 = {
             selector: "node[level=3]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
@@ -450,6 +598,24 @@ const NodeLink = (props) => {
                 enabled: true // whether the command is selectable
               },
               {
+                
+                content: "remove",
+                contentStyle: {},
+                select: function(ele) {
+                  cy.remove(ele);
+                  let currInterest = ele.data()["label"];
+                  let msg = "The interest " + currInterest + " has been removed";
+                 
+                  toast.error(msg, {
+                    toastId: "removedLevel2"
+                  });
+                },
+                enabled: true
+              
+            },             
+             
+              {
+              
                 // example command
 
                 content: "Expand", // html/text content to be displayed in the menu
