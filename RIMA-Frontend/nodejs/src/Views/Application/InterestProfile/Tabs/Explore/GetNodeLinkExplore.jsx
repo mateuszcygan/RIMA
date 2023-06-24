@@ -370,6 +370,22 @@ const NodeLink = (props) => {
     }
   };
 
+  //similar function needed
+/*   const getRelatedForManuals = async (target)=>{
+
+    const relatedForManuals={"interest":target}
+    const response = await RestAPI.getDataNewInterestExplore(dataPage)
+
+    const {data} = response
+
+    const pageData={
+        pageData:data.data.summary,
+        url:data.data.url
+    }
+
+    setCurrPageData(pageData)
+} */
+
   return (
     <>
       <CytoscapeComponent

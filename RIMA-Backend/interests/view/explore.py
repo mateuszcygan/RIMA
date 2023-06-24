@@ -80,8 +80,8 @@ def getCountLinks(links, text, topN=3):
 
 def getDataNewInterestExplore(interest):
     print(interest, "test test")
-    links, text = getLinksTextInPage(interest.capitalize())
-    top3Interests=getCountLinks(links, text)
+    links, text = getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
+    top3Interests=getCountLinks(links, text) #3 top related pages are returned
 
     relatedTopics=[]
     for i in top3Interests:
@@ -107,16 +107,15 @@ def getDataNewInterestExplore(interest):
     return data
 
 def getDataExplore(interests):
-    """
-    data=[]
+    """ data=[]
     for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
         time.sleep(1)
         data.append(currData)
-        print(data, "data interest")
+        print(data, "data interest") """
     
-    with open("data.json", "w") as myfile:
+    """ with open("data.json", "w") as myfile:
         json.dump(data, myfile)    
     """
     
@@ -124,26 +123,3 @@ def getDataExplore(interests):
         data = json.load(myfile)
 
     return data
-
-
-""" def getRelatedArticles(keyword, num_articles=3):
-    wiki_wiki = wikipediaapi.Wikipedia('en')
-
-    page = wiki_wiki.page(keyword)
-    if not page.exists():
-        return []
-
-    related_articles = []
-    links = page.links
-    for title in links.keys():
-        if len(related_articles) >= num_articles:
-            break
-        article = wiki_wiki.page(title)
-        if article.exists():
-            article_data = {
-                'title': article.title,
-                'link': f"https://en.wikipedia.org/wiki/{article.title.replace(' ', '_')}"
-            }
-            related_articles.append(article_data)
-
-    return related_articles """
