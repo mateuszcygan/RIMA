@@ -860,6 +860,21 @@ const NodeLink = (props) => {
                   //}); // `ele` holds the reference to the active element
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
+                  edges.style("opacity", 0)
+                  .animate({
+                    style: { opacity: 1 },
+                    duration: 600,
+                    easing: "ease-in-sine",
+                    queue: false
+                    });
+              
+                  succ.style("opacity", 0)
+                    .animate({
+                      style: { opacity: 1 },
+                      duration: 600,
+                      easing: "ease-in-sine",
+                      queue: false
+                    });
                   let ids = [];
                   edges.map((e) => {
                     e.removeClass("collapsed1");
@@ -1007,7 +1022,7 @@ const NodeLink = (props) => {
               }
             ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
-            activeFillColor: "green", // the colour used to indicate the selected command
+            activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
             indicatorSize: 24, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
             separatorWidth: 3, // the empty spacing in pixels between successive commands
@@ -1022,6 +1037,7 @@ const NodeLink = (props) => {
             atMouse: false, // draw menu at mouse position
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           }
+          let menu4 = cy.cxtmenu(defaultsLevel4);
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
