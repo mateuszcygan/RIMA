@@ -185,7 +185,7 @@ const NodeLink = (props) => {
 
   const validateInterest = (interests, interest) => {
     return interests.some((i) => i.text === interest.toLowerCase());
-  };
+ /* };
     const deleteInterest = async (interestText) => {
     // Find the index of the interest in the keywords array
     const interestIndex = keywords.findIndex(
@@ -214,8 +214,9 @@ const NodeLink = (props) => {
       }
     } else {
       console.log("Interest does not exist in the list!");
-    }
+    }*/
   };
+  
   
   
   
@@ -501,7 +502,7 @@ const NodeLink = (props) => {
 
            
 
-             {
+            /* {
                 content: "delete", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
                 select: function(ele) {
@@ -520,7 +521,7 @@ const NodeLink = (props) => {
                   toast.success(msg, { toastId: "addLevel2" });
                   cy.layout(layoutGraph).run();
                 }
-              }},
+              }},*/
               
              
               {
@@ -607,7 +608,7 @@ const NodeLink = (props) => {
                   let msg = "The interest " + currInterest + " has been removed";
                  
                   toast.error(msg, {
-                    toastId: "removedLevel2"
+                    toastId: "removedLevel3"
                   });
                 },
                 enabled: true
