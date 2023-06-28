@@ -108,8 +108,8 @@ def getDataNewInterestExplore(input):
     return data
 
 def getDataExplore(interests):
-    data=[]
-    """ for i in interests:
+    """ data=[]
+    for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
         time.sleep(1)
@@ -117,8 +117,8 @@ def getDataExplore(interests):
         print(data, "data interest") """
     
     """ with open("data.json", "w") as myfile:
-        json.dump(data, myfile)    
-    """
+        json.dump(data, myfile)     """
+   
     
     with open("data.json", "r") as myfile:
         data = json.load(myfile)

@@ -384,17 +384,18 @@ const NodeLink = (props) => {
       const currentLength = relatedArticles.length;
       const newRelatedArticles = data.query.pages[pageId].links.map((link, index) => {
         const targetId = -2 - Math.floor((currentLength + index) / 6);
-        const sourceId = 250 + Math.floor((currentLength + index) / 6);
+        const sourceId = 250 + index + currentLength;
         const newNode = {
           data: {
             id: sourceId,
+            target: targetId,
             label: link.title,
             level: 2, 
             color: "#808080",
             pageData: "",
             url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(' ', '_')}`,
           },
-          classes: ["level2"], //"collapsed" 
+          classes: ["level2", "collapsed"],
           style: {
             width: 155,
             height: 155,
@@ -402,7 +403,7 @@ const NodeLink = (props) => {
             opacity: "0.8",
           },
         };
-  
+
         const newEdge = {
           data: {
             source: sourceId,
@@ -412,17 +413,26 @@ const NodeLink = (props) => {
           classes: ["level2"],
         };
   
-        //elements.push(newNode, newEdge);
+        console.log(elements);
+        elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
+        console.log(elements);
+
         return [newNode, newEdge]; // Return an array of node and edge objects
       });
   
       setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
+      console.log(relatedArticles);
+
     };
   }, [relatedArticles]);
 
   useEffect(() => {
   console.log(relatedArticles);
 }, [relatedArticles]);
+
+useEffect(() => {
+  console.log(elements);
+}, [elements]);
 
   /* //similar function needed
   const getRelatedForManuals = async (target)=>{
@@ -693,17 +703,20 @@ const NodeLink = (props) => {
                     content: "Expand",
                     contentStyle: {},
                     select: function (ele) {
-                      const successorId = 248 - parseInt(ele.data("id"));
-                      console.log(successorId);
-                      
-                      const targets = relatedArticles.filter(ra => ra.data.id === successorId);
-                      const links = relatedArticles.filter(ra => ra.data.target === parseInt(ele.data("id")));
-                  
-                      console.log(targets);
-                      console.log(links);
+                      if (relatedArticles.length === 6) {
+                        elements.push(...relatedArticles);
+                        relatedArticles.push({});
+                        console.log("Related articles for first manual added.");
+                        console.log(relatedArticles);
+                      }
+                      const targetId = parseInt(ele.data("id"));
 
-                      elements.push(...targets);
-                      elements.push(...links);
+                      elements.forEach(element => {
+                        if (element.data.target === targetId) {
+                          // Remove "collapsed" class from the element
+                          element.classes = element.classes.filter(cls => cls !== "collapsed");
+                        }
+                      });
                       console.log(elements);
                       cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
                   },
