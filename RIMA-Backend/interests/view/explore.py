@@ -78,37 +78,38 @@ def getCountLinks(links, text, topN=3):
     linksWithNum.sort(key=lambda tup:tup[1], reverse=True)
     return linksWithNum[:topN]
 
-def getDataNewInterestExplore(interest):
+def getDataNewInterestExplore(input):
+    if isinstance(input, dict):
+        interest = input["interest"]
+    else:
+        interest = input
+
     print(interest, "test test")
-    links, text = getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
-    top3Interests=getCountLinks(links, text) #3 top related pages are returned
+    links, text = getLinksTextInPage(interest.capitalize())
+    top3Interests = getCountLinks(links, text)
 
-    relatedTopics=[]
+    relatedTopics = []
     for i in top3Interests:
-        currLinks, currText=getLinksTextInPage(i[0])
-        currTop3Interests=getCountLinks(currLinks, currText)
-        currRelatedTopics=[]
-
+        currLinks, currText = getLinksTextInPage(i[0])
+        currTop3Interests = getCountLinks(currLinks, currText)
+        currRelatedTopics = []
 
         for j in currTop3Interests:
-            currPage2=getPageData(j[0])
+            currPage2 = getPageData(j[0])
             currRelatedTopics.append(currPage2)
 
-
-        currPage=getPageData(i[0])
-
-        currPage["relatedTopics"]=currRelatedTopics
+        currPage = getPageData(i[0])
+        currPage["relatedTopics"] = currRelatedTopics
         relatedTopics.append(currPage)
 
-    data=getPageData(interest)
-    data["relatedTopics"]=relatedTopics
-
+    data = getPageData(interest)
+    data["relatedTopics"] = relatedTopics
 
     return data
 
 def getDataExplore(interests):
-    """ data=[]
-    for i in interests:
+    data=[]
+    """ for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
         time.sleep(1)

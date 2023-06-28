@@ -275,6 +275,7 @@ const NodeLink = (props) => {
   const [keyword, setKeyword] = useState('');
   const [articles, setArticles] = useState([]);
   const [selectedArticles, setSelectedArticles] = useState([]);
+  const [relatedArticles, setRelatedArticles] = useState([]);
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -350,7 +351,7 @@ const NodeLink = (props) => {
         style: {
           width: 155,
           height: 155,
-          shape: "ellipse",
+          shape: "roundrectangle",
           opacity: "0.8",
         },
       };
@@ -365,26 +366,74 @@ const NodeLink = (props) => {
       };
 
       elements.push(newNode, newEdge);
+
+      // Fetch related articles
+      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
+
+      const script = document.createElement('script');
+      script.src = relatedUrl;
+      document.head.appendChild(script);
       
       console.log(elements);
     }
   };
 
-  //similar function needed
-/*   const getRelatedForManuals = async (target)=>{
+  useEffect(() => {
+    window.handleRelatedResponse = (data) => {
+      const pageId = Object.keys(data.query.pages)[0];
+      const currentLength = relatedArticles.length;
+      const newRelatedArticles = data.query.pages[pageId].links.map((link, index) => {
+        const targetId = -2 - Math.floor((currentLength + index) / 6);
+        const sourceId = 250 + Math.floor((currentLength + index) / 6);
+        const newNode = {
+          data: {
+            id: sourceId,
+            label: link.title,
+            level: 2, 
+            color: "#808080",
+            pageData: "",
+            url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(' ', '_')}`,
+          },
+          classes: ["level2"], //"collapsed" 
+          style: {
+            width: 155,
+            height: 155,
+            shape: "roundrectangle",
+            opacity: "0.8",
+          },
+        };
+  
+        const newEdge = {
+          data: {
+            source: sourceId,
+            target: targetId,
+            color: "#808080",
+          },
+          classes: ["level2"],
+        };
+  
+        //elements.push(newNode, newEdge);
+        return [newNode, newEdge]; // Return an array of node and edge objects
+      });
+  
+      setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
+    };
+  }, [relatedArticles]);
 
-    const relatedForManuals={"interest":target}
-    const response = await RestAPI.getDataNewInterestExplore(dataPage)
+  useEffect(() => {
+  console.log(relatedArticles);
+}, [relatedArticles]);
+
+  /* //similar function needed
+  const getRelatedForManuals = async (target)=>{
+
+    const title={"interest":target}
+    const response = await RestAPI.getSimiliarInterestData(title)
 
     const {data} = response
 
-    const pageData={
-        pageData:data.data.summary,
-        url:data.data.url
-    }
-
-    setCurrPageData(pageData)
-} */
+    console.log(data);
+  } */
 
   return (
     <>
@@ -644,45 +693,24 @@ const NodeLink = (props) => {
                     content: "Expand",
                     contentStyle: {},
                     select: function (ele) {
-                      let succ = ele.successors().targets();
-                      let edges = ele.successors();
-    
-                      edges.style("opacity", 0)
-                      .animate({
-                        style: { opacity: 1 },
-                        duration: 600,
-                        easing: "ease-in-sine",
-                        queue: false
-                      });
+                      const successorId = 248 - parseInt(ele.data("id"));
+                      console.log(successorId);
+                      
+                      const targets = relatedArticles.filter(ra => ra.data.id === successorId);
+                      const links = relatedArticles.filter(ra => ra.data.target === parseInt(ele.data("id")));
                   
-                      succ.style("opacity", 0)
-                        .animate({
-                          style: { opacity: 1 },
-                          duration: 600,
-                          easing: "ease-in-sine",
-                          queue: false
-                        });
-    
-                        
-                  
-                    let ids = [];
-                    edges.map((e) => {
-                      e.removeClass("collapsed");
-                      ids.push(
-                        e.data()["target"],
-                        e.data()["source"],
-                        e.data()["id"]
-                      );
-                      console.log(ids, "test");
-                    });
-    
-                    /*succ.map((s) => {
-                      s.removeClass("collapsed");
-                    });*/
-                    cy.fit([ele, succ, edges], 16);
+                      console.log(targets);
+                      console.log(links);
+
+                      elements.push(...targets);
+                      elements.push(...links);
+                      console.log(elements);
+                      cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
                   },
                   enabled: true
-                },
+  
+                  // whether the command is selectable
+              },
                 /* {
                   content: "test ele.data()",
                   contentStyle: {},
