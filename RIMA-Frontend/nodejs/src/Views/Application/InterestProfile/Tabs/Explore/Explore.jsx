@@ -270,6 +270,27 @@ const Explore = (props) => {
     "#CDDC39"
 ];
 
+  const colSet4 = [
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF"
+  ];
+
   const [nodeColors, setNodeColors] = useState(defaultSet);
 
   const [selectedColorBox, setSelectedColorBox] = useState(1);
@@ -287,6 +308,8 @@ const Explore = (props) => {
       setNodeColors(colSet2);
     } else if (index === 3) {
       setNodeColors(colSet3);
+    } else if (index === 4) {
+      setNodeColors(colSet4);
     }
   };
 
@@ -297,6 +320,8 @@ const Explore = (props) => {
       setSelectedColorBox(2);
     } else if (index === 3) {
       setSelectedColorBox(3);
+    } else if (index === 4) {
+      setSelectedColorBox(4);
     }
   };
 
@@ -396,6 +421,20 @@ const Explore = (props) => {
               handleColorChange(3);
               handleSelectedColorBox(3);
               console.log('Set of colors changed to third set');
+              nodeColors.forEach(element => console.log(element));
+            }
+            } 
+            />
+            <Typography variant="body1">spring meadow</Typography>
+        </MenuItem>
+        <MenuItem>
+          <Checkbox 
+          checked={selectedColorBox === 4}
+          onChange={() => 
+            {
+              handleColorChange(4);
+              handleSelectedColorBox(4);
+              console.log('Set of colors changed to fourth set');
               nodeColors.forEach(element => console.log(element));
             }
             } 
