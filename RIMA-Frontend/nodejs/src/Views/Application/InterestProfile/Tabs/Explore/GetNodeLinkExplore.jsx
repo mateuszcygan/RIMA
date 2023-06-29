@@ -125,17 +125,19 @@ function getElements(data) {
           };
           elements.push(element, edge);
 
-          relatedTopics.map((n) => {
+          let currRelatedTopics = r.currRelatedTopics;
+
+          currRelatedTopics.map((c) => {
             let idLevel4 = ids.pop();
-            label = n.title;
+            label = c.title;
             element = {
               data: {
                 id: idLevel4,
                 label: label,
                 level: 4,
                 color: color,
-                pageData: n.summary,
-                url: n.wikiURL
+                pageData: c.summary,
+                url: c.wikiURL
               },
               classes: ["collapsed1", "level4"]
             };
