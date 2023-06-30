@@ -307,6 +307,12 @@ const NodeLink = (props) => {
     }
   };
 
+  // Function to open the Wikipedia page in a new tab
+  const handlePreviewArticle = (event, article) => {
+    event.stopPropagation();
+    window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
+  };
+
   useEffect(() => {
     window.handleResponse = (data) => {
       const fetchedArticles = data.query.search.map((article) => ({
@@ -883,11 +889,23 @@ useEffect(() => {
           </Button>
           <List>
             {articles.map((article, index) => (
-              <ListItem button key={index} onClick={() => {
-                handleSelectArticle(article);
-                handleCloseModal();
-              }}>
+              <ListItem
+                button
+                key={index}
+                onClick={() => {
+                  handleSelectArticle(article);
+                  handleCloseModal();
+                }}
+              >
                 <ListItemText primary={article.title} />
+                <Button
+                  variant="outlined"
+                  onClick={(event) => {
+                    handlePreviewArticle(event, article);
+                  }}
+                >
+                  Preview
+                </Button>
               </ListItem>
             ))}
           </List>
