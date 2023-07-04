@@ -126,19 +126,22 @@ function getElements(data) {
             data: {target: idLevel3, source: idLevel2, color: color},
             classes: ["collapsed", "level3"]
           };
+
           elements.push(element, edge);
 
-          relatedTopics.map((n) => {
+          let currRelatedTopics = r.currRelatedTopics;
+
+          currRelatedTopics.map((c) => {
             let idLevel4 = ids.pop();
-            label = n.title;
+            label = c.title;
             element = {
               data: {
                 id: idLevel4,
                 label: label,
                 level: 4,
                 color: color,
-                pageData: n.summary,
-                url: n.wikiURL
+                pageData: c.summary,
+                url: c.wikiURL
               },
               classes: ["collapsed1", "level4"]
             };
@@ -170,7 +173,11 @@ const NodeLink = (props) => {
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
-    openAdd: null
+    openAdd: null,
+  });
+  const [deleteOpen, setDeleteOpen] = useState({
+    openDelete: null,
+    nodeObj: null
   });
  
 
@@ -188,25 +195,74 @@ const NodeLink = (props) => {
     return interests.some((i) => i.text === interest.toLowerCase());
   };
 
- // NEUE DELETE FUNKTION
-  const deleteInterest = async (interest) => {
-    try {
-      // Perform the deletion logic, e.g., calling an API to delete the interest
-      await RestAPI.deleteInterest(interest.id);
+  const handleOpenDelete = (ele) => {
+    const data = ele.data()
+    setDeleteOpen({...deleteOpen, openDelete: true, nodeObj: data});
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteOpen({...deleteOpen, openDelete: false});
+  };
+
+
+
+  //Aktuelle Delete-Funktion
+  const deleteInterest = async (element) => {
+    let elementId = element.id
+    //console.log("element to delete:", elementId)
+    // Find the index of the element in the elements array
+    const elementIndex = elements.findIndex(
+      (element) => element.data.id === elementId
+    );
+    //console.log("Zu löschende Index:", elementIndex)
+  
+    if (elementIndex !== -1) {
+      // Remove the element, nodes, and edges from the elements array
+      const elementToRemove = elements[elementIndex];
+      elements.splice(elementIndex, 1);
+
+      const sourceEdges = elements.filter(
+        (element) => element.data.target === elementId
+      );
+      sourceEdges.forEach((edge) => {
+        const newEdgeIndex = elements.findIndex(
+          (element) => element === edge
+        );
+        elements.splice(newEdgeIndex, 1);
+      })
       
-      // Update the keywords state by removing the deleted interest
-      const updatedKeywords = keywords.filter((k) => k.id !== interest.id);
-      setKeywords(updatedKeywords);
-      
-      // Show a success toast notification
-      toast.success(`Successfully deleted interest: ${interest.text}`, {
-        toastId: "deleteInterest"
+      const connectedEdges = elements.filter(
+        (element) => element.data.source === elementId
+      );
+      connectedEdges.forEach((edge) => {
+        const edgeIndex = elements.findIndex(
+          (element) => element === edge
+        );
+        elements.splice(edgeIndex, 1);
       });
-    } catch (error) {
-      console.error("Error deleting interest:", error);
-      // Show an error toast notification
-      toast.error("Failed to delete the interest. Please try again later.", {
-        toastId: "deleteInterest"
+
+      const connectedNodes = elements.filter(
+        (element) => element.data.source === elementToRemove.data.id
+      );
+      connectedNodes.forEach((node) => {
+      deleteInterest(node.data.id);
+      });
+  
+      try {
+        const msg = `The interest "${element.label}" has been removed.`;
+        toast.success(msg, {
+          toastId: "addLevel2"
+      });
+      } catch (err) {
+        console.log("Error adding interest:", err);
+        toast.error("Failed to remove the interest. Please try again later.", {
+          toastId: "addLevel2"
+        });
+      }
+    }
+    else {
+      toast.error("Failed to remove the interest. Please try again later.", {
+        toastId: "addLevel2"
       });
     }
   };
@@ -613,32 +669,7 @@ const NodeLink = (props) => {
                 content: "Delete",
                 contentStyle: {},
                 select: function (ele) {
-                  let currInterest = ele.data()["label"];
-                  let msg = "The interest " + currInterest + " has been removed";
-                  toast.error(msg, { toastId: "removedLevel2" });
-              
-                  ele.animate({
-                    style: { opacity: 0, width: 0, height: 0 },
-                    duration: 600,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      ele.addClass("collapsed");
-                      ele.remove();
-                    }
-                  });
-              
-                  let edges = ele.connectedEdges();
-              
-                  edges.animate({
-                    style: { opacity: 0, width: 0 },
-                    duration: 600,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      edges.remove();
-                    }
-                  });
+                  handleOpenDelete(ele);
                 },
                 enabled: true
               },              
@@ -899,32 +930,7 @@ const NodeLink = (props) => {
                 content: "Delete",
                 contentStyle: {},
                 select: function (ele) {
-                  let currInterest = ele.data()["label"];
-                  let msg = "The interest " + currInterest + " has been removed";
-                  toast.error(msg, { toastId: "removedLevel2" });
-              
-                  ele.animate({
-                    style: { opacity: 0, width: 0, height: 0 },
-                    duration: 600,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      ele.addClass("collapsed");
-                      ele.remove();
-                    }
-                  });
-              
-                  let edges = ele.connectedEdges();
-              
-                  edges.animate({
-                    style: { opacity: 0, width: 0 },
-                    duration: 600,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      edges.remove();
-                    }
-                  });
+                  handleOpenDelete(ele);
                 },
                 enabled: true
               }, 
@@ -1000,6 +1006,14 @@ const NodeLink = (props) => {
                 },
                 enabled: false // whether the command is selectable
               },
+              {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  handleOpenDelete(ele);
+                },
+                enabled: true
+              }, 
               {
                 // example command
                 // optional: custom background color for item
@@ -1077,6 +1091,24 @@ const NodeLink = (props) => {
             Cancel
           </Button>
         </DialogActions>
+      </Dialog>
+      <Dialog open={deleteOpen.openDelete} onClose={handleCloseDelete}>
+        {deleteOpen.nodeObj !== null ? (
+        <DialogTitle>Are you sure you want to delete the interest: {deleteOpen.nodeObj.label} ?</DialogTitle> 
+        ): (
+        <DialogTitle></DialogTitle>  
+        )}
+        <DialogActions>
+          <Button variant="contained" onClick={handleCloseDelete} color="primary">
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={() => {
+            deleteInterest(deleteOpen.nodeObj);
+            handleCloseDelete();
+            }} color="secondary">
+          Delete
+          </Button>
+          </DialogActions>
       </Dialog>
     </>
   );

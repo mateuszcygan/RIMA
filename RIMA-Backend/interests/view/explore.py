@@ -80,7 +80,7 @@ def getCountLinks(links, text, topN=3):
 
 def getDataNewInterestExplore(interest):
     print(interest, "test test")
-    links, text = getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
+    links, text=getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
     top3Interests=getCountLinks(links, text) #3 top related pages are returned
 
     relatedTopics=[]
@@ -91,35 +91,46 @@ def getDataNewInterestExplore(interest):
 
 
         for j in currTop3Interests:
-            currPage2=getPageData(j[0])
+            currLinks2, currText2=getLinksTextInPage(j[0])
+            currTop3Interests2=getCountLinks(currLinks2, currText2)
+            currRelatedTopics2=[]
+            
+            for k in currTop3Interests2:
+                currPage3 = getPageData(k[0])
+                currRelatedTopics2.append(currPage3)
+
+            
+            currPage2 = getPageData(j[0])
+            
+            currPage2['currRelatedTopics']=currRelatedTopics2
             currRelatedTopics.append(currPage2)
 
+        
+        currPage = getPageData(i[0])
 
-        currPage=getPageData(i[0])
-
-        currPage["relatedTopics"]=currRelatedTopics
+        currPage['relatedTopics']=currRelatedTopics
         relatedTopics.append(currPage)
 
     data=getPageData(interest)
-    data["relatedTopics"]=relatedTopics
+    data['relatedTopics']=relatedTopics
 
 
     return data
 
 def getDataExplore(interests):
-    """ data=[]
+    data=[]
     for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
-        time.sleep(1)
+        time.sleep(3)
         data.append(currData)
-        print(data, "data interest") """
+        print(data, "data interest")
     
-    """ with open("data.json", "w") as myfile:
-        json.dump(data, myfile)    
-    """
+    """with open("data.json", "w") as myfile:
+        json.dump(data, myfile)   
+    
     
     with open("data.json", "r") as myfile:
-        data = json.load(myfile)
+        data = json.load(myfile)"""
 
     return data
