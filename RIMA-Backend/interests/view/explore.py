@@ -78,17 +78,21 @@ def getCountLinks(links, text, topN=3):
     linksWithNum.sort(key=lambda tup:tup[1], reverse=True)
     return linksWithNum[:topN]
 
-def getDataNewInterestExplore(interest):
+def getDataNewInterestExplore(input):
+    if isinstance(input, dict):
+        interest = input["interest"]
+    else:
+        interest = input
+
     print(interest, "test test")
     links, text=getLinksTextInPage(interest.capitalize()) #multiple links and text from wikipedia page
     top3Interests=getCountLinks(links, text) #3 top related pages are returned
 
-    relatedTopics=[]
+    relatedTopics = []
     for i in top3Interests:
-        currLinks, currText=getLinksTextInPage(i[0])
-        currTop3Interests=getCountLinks(currLinks, currText)
-        currRelatedTopics=[]
-
+        currLinks, currText = getLinksTextInPage(i[0])
+        currTop3Interests = getCountLinks(currLinks, currText)
+        currRelatedTopics = []
 
         for j in currTop3Interests:
             currLinks2, currText2=getLinksTextInPage(j[0])
@@ -127,9 +131,8 @@ def getDataExplore(interests):
         print(data, "data interest") """
     
     """ with open("data.json", "w") as myfile:
-        json.dump(data, myfile) """   
-    
-    
+        json.dump(data, myfile) """    
+
     with open("data.json", "r") as myfile:
         data = json.load(myfile)
 

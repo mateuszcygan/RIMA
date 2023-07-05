@@ -5,6 +5,7 @@ import FilterListIcon from "@material-ui/icons/FilterList";
 import NodeLink from "./GetNodeLinkExplore";
 import RestAPI from "../../../../../Services/api";
 import PaletteIcon from '@material-ui/icons/Palette';
+import { Divider } from '@material-ui/core';
 
 
 const Explore = (props) => {
@@ -270,6 +271,27 @@ const Explore = (props) => {
     "#CDDC39"
 ];
 
+  const colSet4 = [
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF"
+  ];
+
   const [nodeColors, setNodeColors] = useState(defaultSet);
 
   const [selectedColorBox, setSelectedColorBox] = useState(1);
@@ -287,6 +309,8 @@ const Explore = (props) => {
       setNodeColors(colSet2);
     } else if (index === 3) {
       setNodeColors(colSet3);
+    } else if (index === 4) {
+      setNodeColors(colSet4);
     }
   };
 
@@ -297,6 +321,8 @@ const Explore = (props) => {
       setSelectedColorBox(2);
     } else if (index === 3) {
       setSelectedColorBox(3);
+    } else if (index === 4) {
+      setSelectedColorBox(4);
     }
   };
 
@@ -354,55 +380,64 @@ const Explore = (props) => {
         </Button>
         {stateColor.openColorsMenu && (
       <Menu
-        id="nodeColorsMenu"
-        anchorEl={stateColor.openColorsMenu} //openNodeColors menu is nowhere defined
-        open={Boolean(stateColor.openColorsMenu)}
-        onClose={handleCloseNodeColorsMenu}
-      >
-        <MenuItem>
-          <Checkbox 
+      id="nodeColorsMenu"
+      anchorEl={stateColor.openColorsMenu}
+      open={Boolean(stateColor.openColorsMenu)}
+      onClose={handleCloseNodeColorsMenu}
+    >
+      <MenuItem disabled>
+        <Typography variant="body1">sets of colors</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
           checked={selectedColorBox === 1}
-          onChange={() => 
-          {
+          onChange={() => {
             handleColorChange(1);
             handleSelectedColorBox(1);
             console.log('Set of colors changed to default set');
             nodeColors.forEach(element => console.log(element));
-           } 
-          }
-          />
-          <Typography variant="body1">midnight shadows</Typography>
-        </MenuItem>
-        <MenuItem>
-          <Checkbox 
+          }}
+        />
+        <Typography variant="body1">midnight shadows</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
           checked={selectedColorBox === 2}
-          onChange={() => 
-          {
+          onChange={() => {
             handleColorChange(2);
             handleSelectedColorBox(2);
             console.log('Set of colors changed to second set');
             nodeColors.forEach(element => console.log(element));
-            // let colors = getNodeColors();
-           }
-          } 
-          />
-          <Typography variant="body1">deep ocean</Typography>
-        </MenuItem>
-        <MenuItem>
-          <Checkbox 
+          }}
+        />
+        <Typography variant="body1">deep ocean</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
           checked={selectedColorBox === 3}
-          onChange={() => 
-            {
-              handleColorChange(3);
-              handleSelectedColorBox(3);
-              console.log('Set of colors changed to third set');
-              nodeColors.forEach(element => console.log(element));
-            }
-            } 
-            />
-            <Typography variant="body1">spring meadow</Typography>
-        </MenuItem>
-      </Menu>
+          onChange={() => {
+            handleColorChange(3);
+            handleSelectedColorBox(3);
+            console.log('Set of colors changed to third set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">spring meadow</Typography>
+      </MenuItem>
+      <Divider /> 
+      <MenuItem>
+        <Checkbox
+          checked={selectedColorBox === 4}
+          onChange={() => {
+            handleColorChange(4);
+            handleSelectedColorBox(4);
+            console.log('Set of colors changed to fourth set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">accessible colors</Typography>
+      </MenuItem>
+    </Menu>
     )}
       </Grid>
       <Grid container>

@@ -3,14 +3,15 @@ import cytoscape from "cytoscape";
 import React, {useEffect, useState} from "react"
 //import './cytoscape.css';
 
-import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions, SvgIcon } from '@material-ui/core';
+import { OpenInNew } from '@material-ui/icons';
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
 import WikiDesc from "../Connect/WikiDesc";
 import {toast, ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RestAPI from "../../../../../Services/api";
-import { selector } from "d3";
+import WikipediaLogo from "./Wikipedia-logo.png"
 
 cytoscape.use(cxtmenu);
 
@@ -181,8 +182,6 @@ const NodeLink = (props) => {
   });
  
 
-
-
   const handleOpenLearn = (ele) => {
     const data = ele.data();
     setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
@@ -351,7 +350,7 @@ const NodeLink = (props) => {
   useEffect(() => {
     colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    console.log(elementsCurr);
+    console.log(elementsCurr); //comment
 
     setElements([]);
     setElements(elementsCurr[0]);
@@ -441,6 +440,20 @@ const NodeLink = (props) => {
   const [keyword, setKeyword] = useState('');
   const [articles, setArticles] = useState([]);
   const [selectedArticles, setSelectedArticles] = useState([]);
+  const [relatedArticles, setRelatedArticles] = useState([]);
+  const [isExpandDialogOpen, setExpandDialogOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  const handleExpandClick = (ele) => {
+    setSelectedNode(ele);
+    setExpandDialogOpen(true);
+    // Other code specific to the provided Expand function...
+  };
+
+  const handleExpandDialogClose = () => {
+    setExpandDialogOpen(false);
+    setSelectedNode(null);
+  };
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -470,6 +483,12 @@ const NodeLink = (props) => {
       script.src = url;
       document.head.appendChild(script);
     }
+  };
+
+  // Function to open the Wikipedia page in a new tab
+  const handlePreviewArticle = (event, article) => {
+    event.stopPropagation();
+    window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
   useEffect(() => {
@@ -516,7 +535,7 @@ const NodeLink = (props) => {
         style: {
           width: 155,
           height: 155,
-          shape: "ellipse",
+          shape: "roundrectangle",
           opacity: "0.8",
         },
       };
@@ -531,26 +550,96 @@ const NodeLink = (props) => {
       };
 
       elements.push(newNode, newEdge);
+
+      // Fetch related articles
+      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
+
+      const script = document.createElement('script');
+      script.src = relatedUrl;
+      document.head.appendChild(script);
       
       console.log(elements);
     }
   };
 
-  //similar function needed
-/*   const getRelatedForManuals = async (target)=>{
+  useEffect(() => {
+    window.handleRelatedResponse = (data) => {
+      const pageId = Object.keys(data.query.pages)[0];
+      const currentLength = relatedArticles.length;
+      const newRelatedArticles = data.query.pages[pageId].links.map((link, index) => {
+        const targetId = -2 - Math.floor((currentLength + index) / 6);
+        const sourceId = 250 + index + currentLength;
+        const newNode = {
+          data: {
+            id: sourceId,
+            target: targetId,
+            label: link.title,
+            level: 2, 
+            color: "#808080",
+            pageData: "",
+            url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(' ', '_')}`,
+          },
+          classes: ["level2", "collapsed"],
+          style: {
+            width: 155,
+            height: 155,
+            shape: "roundrectangle",
+            opacity: "0.8",
+          },
+        };
 
-    const relatedForManuals={"interest":target}
-    const response = await RestAPI.getDataNewInterestExplore(dataPage)
+        const newEdge = {
+          data: {
+            source: sourceId,
+            target: targetId,
+            color: "#808080",
+          },
+          classes: ["level2"],
+        };
+  
+        console.log(elements);
+        elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
+        console.log(elements);
+
+        return [newNode, newEdge]; // Return an array of node and edge objects
+      });
+  
+      setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
+      console.log(relatedArticles);
+
+    };
+  }, [relatedArticles]);
+
+  useEffect(() => {
+  console.log(relatedArticles);
+}, [relatedArticles]);
+
+  useEffect(() => {
+    console.log(elements);
+  }, [elements]);
+
+  useEffect(() => {
+    let timeoutId;
+    if (isExpandDialogOpen) {
+      timeoutId = setTimeout(() => {
+        handleExpandDialogClose();
+      }, 0.001); // Set the timeout duration in milliseconds (3 seconds in this case)
+    }
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isExpandDialogOpen]);
+
+  /* //similar function needed
+  const getRelatedForManuals = async (target)=>{
+
+    const title={"interest":target}
+    const response = await RestAPI.getSimiliarInterestData(title)
 
     const {data} = response
 
-    const pageData={
-        pageData:data.data.summary,
-        url:data.data.url
-    }
-
-    setCurrPageData(pageData)
-} */
+    console.log(data);
+  } */
 
   return (
     <>
@@ -612,110 +701,141 @@ const NodeLink = (props) => {
             selector: "node[level=2]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
-            commands: [
-              // an array of commands to list in the menu or a function that returns the array
+            commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
+              const id = ele.data("id");
 
-              {
-                content: "Learn more",
-                // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
+              if (id < 250) {
+                return [
+                  {
+                    content: "Learn more",
+                    // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
 
-                  handleOpenLearn(ele); // `ele` holds the reference to the active element
-                },
-                enabled: true // whether the command is selectable
-              },   
-              {
-                content: "Expand",
-                contentStyle: {},
-                select: function (ele) {
-                  let succ = ele.successors().targets();
-                  let edges = ele.successors();
+                      handleOpenLearn(ele); // `ele` holds the reference to the active element
+                    },
+                    enabled: true // whether the command is selectable
+                  },
+                  {
+                    content: "Expand",
+                    contentStyle: {},
+                    select: function (ele) {
+                      let succ = ele.successors().targets();
+                      let edges = ele.successors();
 
-                  edges.style("opacity", 0)
-                  .style("background-color", "background-color")
-                  .animate({
-                    style: { opacity: 1 },
-                    duration: 750,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      edges.style("background-color", ele.css("background-color"));
-                    }
-                  });
-            
-                  succ.style("opacity", 0)
-                    .style("background-color", "background-color")
-                    .style("width", 0)
-                    .style("height", 0)
-                    .animate({
-                      style: { opacity: 1, width: 200, height: 200 },
-                      duration: 750, // Adjust the duration value to control the speed (in milliseconds)
-                      easing: "ease-in-sine",
-                      queue: false,
-                      complete: function () {
-                        succ.style("background-color", ele.css("background-color"));
-                      }
+                      edges.style("opacity", 0)
+                      .animate({
+                        style: { opacity: 1 },
+                        duration: 600,
+                        easing: "ease-in-sine",
+                        queue: false
+                      });
+                  
+                      succ.style("opacity", 0)
+                        .animate({
+                          style: { opacity: 1 },
+                          duration: 600,
+                          easing: "ease-in-sine",
+                          queue: false
+                        });
+
+                        
+                  
+                    let ids = [];
+                    edges.map((e) => {
+                      e.removeClass("collapsed");
+                      ids.push(
+                        e.data()["target"],
+                        e.data()["source"],
+                        e.data()["id"]
+                      );
+                      console.log(ids, "test");
                     });
 
-                    
-              
-                let ids = [];
-                edges.map((e) => {
-                  e.removeClass("collapsed");
-                  ids.push(
-                    e.data()["target"],
-                    e.data()["source"],
-                    e.data()["id"]
-                  );
-                  console.log(ids, "test");
-                });
-
-                /*succ.map((s) => {
-                  s.removeClass("collapsed");
-                });*/
-                cy.fit([ele, succ, edges], 16);
-              },
-              enabled: true
-  
-                  // whether the command is selectable
-              },
-              {
-                content: "Delete",
-                contentStyle: {},
-                select: function (ele) {
-                  handleOpenDelete(ele);
-                },
-                enabled: true
-              },              
-              {
-                content: "Add to my interests", // html/text content to be displayed in the menu
-                contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                select: function (ele) {
-                  // a function to execute when the command is selected
-                  let currInterest = ele.data()["label"];
-                  addNewInterest(currInterest);
-                  let msg =
-                    "The interest " +
-                    currInterest +
-                    " has added to your interests";
-                  toast.success(msg, {
-                    toastId: "addLevel2"
-                  }); // `ele` holds the reference to the active element 
-                },
-                enabled: true // whether the command is selectable
-              },
-              /* {
-                content: "test ele.data()",
-                contentStyle: {},
-                select: function (ele) {
-                  const data = ele.data();
-                  console.log(data);
-                },
-                enabled: true,
-              } */
-            ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
+                    /*succ.map((s) => {
+                      s.removeClass("collapsed");
+                    });*/
+                    cy.fit([ele, succ, edges], 16);
+                  },
+                  enabled: true
+      
+                      // whether the command is selectable
+                  },
+                  {
+                    content: "Delete",
+                    contentStyle: {},
+                    select: function (ele) {
+                      let currInterest = ele.data()["label"];
+                      let msg = "The interest " + currInterest + " has been removed";
+                      toast.error(msg, { toastId: "removedLevel2" });
+                  
+                      ele.animate({
+                        style: { opacity: 0, width: 0, height: 0 },
+                        duration: 600,
+                        easing: "ease-in-sine",
+                        queue: false,
+                        complete: function () {
+                          ele.addClass("collapsed");
+                          ele.remove();
+                          console.log(elements);
+                        }
+                      });
+                  
+                      let edges = ele.connectedEdges();
+                  
+                      edges.animate({
+                        style: { opacity: 0, width: 0 },
+                        duration: 600,
+                        easing: "ease-in-sine",
+                        queue: false,
+                        complete: function () {
+                          edges.remove();
+                        }
+                      });
+                    },
+                    enabled: true
+                  },              
+                  {
+                    content: "Add to my interests", // html/text content to be displayed in the menu
+                    contentStyle: {}, // css key:value pairs to set the command's css in js if you want
+                    select: function (ele) {
+                      // a function to execute when the command is selected
+                      let currInterest = ele.data()["label"];
+                      addNewInterest(currInterest);
+                      let msg =
+                        "The interest " +
+                        currInterest +
+                        " has added to your interests";
+                      toast.success(msg, {
+                        toastId: "addLevel2"
+                      }); // `ele` holds the reference to the active element
+                    },
+                    enabled: true // whether the command is selectable
+                  }
+                  /* {
+                    content: "test ele.data()",
+                    contentStyle: {},
+                    select: function (ele) {
+                      const data = ele.data();
+                      console.log(data);
+                    },
+                    enabled: true,
+                  } */
+                ];
+               } else {
+                return [
+                  {
+                    content: "Read more",
+                    select: function(ele) {
+                      const url = ele.data('url');
+                      window.open(url, '_blank');
+                    },
+                    enabled: true
+                  }
+                ];
+              }
+            }, // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
@@ -801,49 +921,40 @@ const NodeLink = (props) => {
                     select: function (ele) {},
                     enabled: false,
                   }, */
-                  {
-                    content: "Expand",
-                    contentStyle: {},
-                    select: function (ele) {
-                      let succ = ele.successors().targets();
-                      let edges = ele.successors();
-    
-                      edges.style("opacity", 0)
-                      .animate({
-                        style: { opacity: 1 },
-                        duration: 600,
-                        easing: "ease-in-sine",
-                        queue: false
-                      });
-                  
-                      succ.style("opacity", 0)
-                        .animate({
-                          style: { opacity: 1 },
-                          duration: 600,
-                          easing: "ease-in-sine",
-                          queue: false
-                        });
-    
-                        
-                  
-                    let ids = [];
-                    edges.map((e) => {
-                      e.removeClass("collapsed");
-                      ids.push(
-                        e.data()["target"],
-                        e.data()["source"],
-                        e.data()["id"]
-                      );
-                      console.log(ids, "test");
-                    });
-    
-                    /*succ.map((s) => {
-                      s.removeClass("collapsed");
-                    });*/
-                    cy.fit([ele, succ, edges], 16);
-                  },
-                  enabled: true
+              {
+                content: "Expand",
+                contentStyle: {},
+                select: function (ele) {
+                  if (relatedArticles.length === 6) {
+                    elements.push(...relatedArticles);
+                    relatedArticles.push({});
+                    console.log("Related articles for first manual added.");
+                    console.log(relatedArticles);
+                  }
+                  const targetId = parseInt(ele.data("id"));
+
+                  elements.forEach(element => {
+                    if (element.data.target === targetId) {
+                      // Remove "collapsed" class from the element
+                      element.classes = element.classes.filter(cls => cls !== "collapsed");
+                    }
+                  });
+                  console.log(elements);
+                  cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
+                  handleExpandClick(ele);
+              },
+              enabled: true
+  
+                  // whether the command is selectable
+              },
+              {
+                content: "Read more",
+                select: function(ele) {
+                  const url = ele.data('url');
+                  window.open(url, '_blank');
                 },
+                enabled: true
+              }
                 /* {
                   content: "test ele.data()",
                   contentStyle: {},
@@ -1105,11 +1216,29 @@ const NodeLink = (props) => {
           </Button>
           <List>
             {articles.map((article, index) => (
-              <ListItem button key={index} onClick={() => {
-                handleSelectArticle(article);
-                handleCloseModal();
-              }}>
+              <ListItem
+                button
+                key={index}
+                onClick={() => {
+                  handleSelectArticle(article);
+                  handleCloseModal();
+                }}
+              >
                 <ListItemText primary={article.title} />
+                <Button
+                  variant="outlined"
+                  onClick={(event) => {
+                    handlePreviewArticle(event, article);
+                  }}
+                  endIcon={
+                    <>
+                      <img src={WikipediaLogo} alt="Wikipedia logo" style={{ height: '25px', width: '25px', marginRight: '8px'}} />
+                      <SvgIcon component={OpenInNew} />
+                    </>
+                  }
+                >
+                  Read more
+                </Button>
               </ListItem>
             ))}
           </List>
@@ -1120,23 +1249,22 @@ const NodeLink = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={deleteOpen.openDelete} onClose={handleCloseDelete}>
-        {deleteOpen.nodeObj !== null ? (
-        <DialogTitle>Are you sure you want to delete the interest: {deleteOpen.nodeObj.label} ?</DialogTitle> 
-        ): (
-        <DialogTitle></DialogTitle>  
-        )}
+      <Dialog open={isExpandDialogOpen} onClose={handleExpandDialogClose} style={{ visibility: 'hidden' }}>
+        <DialogTitle>Expand</DialogTitle>
+        <DialogContent>
+          {/* Content of the dialog */}
+          {selectedNode && (
+            <div>
+              <p>Pop-up window content for node {selectedNode.id()} goes here.</p>
+              <p>Desired content</p>
+            </div>
+          )}
+        </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleCloseDelete} color="primary">
-            Cancel
+          <Button onClick={handleExpandDialogClose} color="primary">
+            Close
           </Button>
-          <Button variant="contained" onClick={() => {
-            deleteInterest(deleteOpen.nodeObj);
-            handleCloseDelete();
-            }} color="secondary">
-          Delete
-          </Button>
-          </DialogActions>
+        </DialogActions>
       </Dialog>
     </>
   );

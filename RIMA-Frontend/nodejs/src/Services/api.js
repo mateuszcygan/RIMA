@@ -868,25 +868,6 @@ static getListPublications(conference_name_abbr,author_id) {
     }).then((res) => res);
   }
 
-  static getRelatedArticles(keyword, numArticles) {
-    const TOKEN = getItem("accessToken");
-    const requestData = {
-      keyword: keyword,
-      num_articles: numArticles,
-    };
-  
-    return axios({
-      method: "POST",
-      url: `${BASE_URL}/api/interests/get-articles-related`,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Token ${TOKEN}`,
-      },
-      data: requestData,
-    }).then((res) => res.data); // Return the data property of the response
-  }  
-
 }
 
 
