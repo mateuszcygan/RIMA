@@ -218,7 +218,7 @@ const NodeLink = (props) => {
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
-      const elementToRemove = elements[elementIndex];
+      // const elementToRemove = elements[elementIndex]; - nicht benutzt
       elements.splice(elementIndex, 1);
 
       const sourceEdges = elements.filter(
@@ -241,28 +241,34 @@ const NodeLink = (props) => {
         elements.splice(edgeIndex, 1);
       });
 
+      console.log(elements);
+
+      /* besser auskommentieren für bessere Performanz
       const connectedNodes = elements.filter(
         (element) => element.data.source === elementToRemove.data.id
       );
       connectedNodes.forEach((node) => {
       deleteInterest(node.data.id);
-      });
+      }); */
   
       try {
         const msg = `The interest "${element.label}" has been removed.`;
         toast.success(msg, {
-          toastId: "addLevel2"
+          toastId: "addLevel2",
+          autoClose: 3000 // Display for 3 seconds
       });
       } catch (err) {
         console.log("Error adding interest:", err);
         toast.error("Failed to remove the interest. Please try again later.", {
-          toastId: "addLevel2"
+          toastId: "addLevel2",
+          autoClose: 3000 // Display for 3 seconds
         });
       }
     }
     else {
       toast.error("Failed to remove the interest. Please try again later.", {
-        toastId: "addLevel2"
+        toastId: "addLevel2",
+        autoClose: 3000 // Display for 3 seconds
       });
     }
   };
@@ -628,19 +634,29 @@ const NodeLink = (props) => {
                   let edges = ele.successors();
 
                   edges.style("opacity", 0)
+                  .style("background-color", "background-color")
                   .animate({
                     style: { opacity: 1 },
-                    duration: 600,
+                    duration: 750,
                     easing: "ease-in-sine",
-                    queue: false
+                    queue: false,
+                    complete: function () {
+                      edges.style("background-color", ele.css("background-color"));
+                    }
                   });
-              
+            
                   succ.style("opacity", 0)
+                    .style("background-color", "background-color")
+                    .style("width", 0)
+                    .style("height", 0)
                     .animate({
-                      style: { opacity: 1 },
-                      duration: 600,
+                      style: { opacity: 1, width: 200, height: 200 },
+                      duration: 750, // Adjust the duration value to control the speed (in milliseconds)
                       easing: "ease-in-sine",
-                      queue: false
+                      queue: false,
+                      complete: function () {
+                        succ.style("background-color", ele.css("background-color"));
+                      }
                     });
 
                     
@@ -891,21 +907,33 @@ const NodeLink = (props) => {
                   //}); // `ele` holds the reference to the active element
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
+                  
                   edges.style("opacity", 0)
+                  .style("background-color", "background-color")
                   .animate({
                     style: { opacity: 1 },
-                    duration: 600,
+                    duration: 750,
                     easing: "ease-in-sine",
-                    queue: false
-                    });
-              
+                    queue: false,
+                    complete: function () {
+                      edges.style("background-color", ele.css("background-color"));
+                    }
+                  });
+            
                   succ.style("opacity", 0)
+                    .style("background-color", "background-color")
+                    .style("width", 0)
+                    .style("height", 0)
                     .animate({
-                      style: { opacity: 1 },
-                      duration: 600,
+                      style: { opacity: 1, width: 200, height: 200 },
+                      duration: 750, // Adjust the duration value to control the speed (in milliseconds)
                       easing: "ease-in-sine",
-                      queue: false
+                      queue: false,
+                      complete: function () {
+                        succ.style("background-color", ele.css("background-color"));
+                      }
                     });
+
                   let ids = [];
                   edges.map((e) => {
                     e.removeClass("collapsed1");
