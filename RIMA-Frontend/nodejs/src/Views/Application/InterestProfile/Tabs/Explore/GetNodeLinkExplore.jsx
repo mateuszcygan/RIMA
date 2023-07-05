@@ -851,15 +851,6 @@ const NodeLink = (props) => {
   
                   // whether the command is selectable
               },
-              {//DELETE INTEREST NEU
-                content: "Delete",
-                select: function (ele) {
-                  const interest = ele.data(); // Get the interest data
-                  deleteInterest(interest); // Call the deleteInterest function
-                },
-                enabled: true
-              }
-              ,
               {
                 content: "Read more",
                 select: function(ele) {
@@ -915,7 +906,6 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
-              {content: "Delete"},
               {
                 // example command
 
