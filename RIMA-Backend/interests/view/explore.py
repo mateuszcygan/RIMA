@@ -120,6 +120,9 @@ def getDataExplore(interests):
         json.dump(data, myfile)     """
    
     
+    """ with open("data.json", "w") as myfile:
+        json.dump(data, myfile) """
+
     with open("data.json", "r") as myfile:
         data = json.load(myfile)
 

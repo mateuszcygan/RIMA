@@ -15,27 +15,30 @@ import WikipediaLogo from "./Wikipedia-logo.png"
 
 cytoscape.use(cxtmenu);
 
-function getColor(currColors) {
-  const allColors = [
-    "#397367",
-    "#160C28",
-    "#EFCB68",
-    "#C89FA3",
-    "#368F8B",
-    "#232E21",
-    "#B6CB9E",
-    "#92B4A7",
-    "#8C8A93",
-    "#8C2155",
-    "#22577A",
-    "#7FD8BE",
-    "#875C74",
-    "#9E7682",
-    "#FCAB64",
-    "#EDCB96",
-    "#231942",
-    "#98B9F2"
-  ];
+let colorPalette = [
+  "#397367",
+  "#160C28",
+  "#EFCB68",
+  "#C89FA3",
+  "#368F8B",
+  "#232E21",
+  "#B6CB9E",
+  "#92B4A7",
+  "#8C8A93",
+  "#8C2155",
+  "#22577A",
+  "#7FD8BE",
+  "#875C74",
+  "#9E7682",
+  "#FCAB64",
+  "#EDCB96",
+  "#231942",
+  "#98B9F2"
+];
+
+function getColor(currColors, colors) {
+
+  const allColors = colors;
   let pickedColor = "";
   if (allColors.length === currColors.length) {
     currColors = [];
@@ -59,7 +62,7 @@ function getElements(data) {
   console.log(elements);
   try {
     data.map((d) => {
-      let colors = getColor(currColors);
+      let colors = getColor(currColors, colorPalette);
       currColors = colors[1];
       let label = d.title;
       let explore = d.relatedTopics;
@@ -134,16 +137,22 @@ function getElements(data) {
     ];
   };
 
-  return elements;
+  return [elements, currColors];
+  
 }
 
+
+
+
+
 const NodeLink = (props) => {
-  const {data, keywords} = props;
+  const {data, keywords,setKeywords,colors} = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
     openAdd: null
   });
+ 
 
   const handleOpenLearn = (ele) => {
     const data = ele.data();
@@ -157,7 +166,66 @@ const NodeLink = (props) => {
     return interests.some((i) => i.text === interest.toLowerCase());
   };
 
+ // NEUE DELETE FUNKTION
+  const deleteInterest = async (interest) => {
+    try {
+      // Perform the deletion logic, e.g., calling an API to delete the interest
+      await RestAPI.deleteInterest(interest.id);
+      
+      // Update the keywords state by removing the deleted interest
+      const updatedKeywords = keywords.filter((k) => k.id !== interest.id);
+      setKeywords(updatedKeywords);
+      
+      // Show a success toast notification
+      toast.success(`Successfully deleted interest: ${interest.text}`, {
+        toastId: "deleteInterest"
+      });
+    } catch (error) {
+      console.error("Error deleting interest:", error);
+      // Show an error toast notification
+      toast.error("Failed to delete the interest. Please try again later.", {
+        toastId: "deleteInterest"
+      });
+    }
+  };
+  
+//ADD FUNKTION WURDE geändert, die alte ist unten
   const addNewInterest = async (currInterest) => {
+    const alreadyExist = keywords.some((interest) => interest.text === currInterest.toLowerCase());
+  
+    if (alreadyExist) {
+      console.log("Interest already exists in my list!");
+      return;
+    }
+  
+    const newInterest = {
+      id: Date.now(),
+      categories: [],
+      originalKeywords: [],
+      source: "Manual",
+      text: currInterest.toLowerCase(),
+      value: 3,
+    };
+  
+    const newKeywords = [...keywords, newInterest];
+  
+    try {
+      await RestAPI.addKeyword(newKeywords);
+      newKeywords(newKeywords);
+  
+      const msg = `The interest "${currInterest}" has been added to your interests.`;
+      toast.success(msg, {
+        toastId: "addLevel2"
+      });
+    } catch (error) {
+      console.error("Error adding interest:", error);
+      toast.error("Failed to add the interest. Please try again later.", {
+        toastId: "addLevel2"
+      });
+    }
+  };
+  
+  /*const addNewInterest = async (currInterest) => {
     let alreadyExist = validateInterest(keywords, currInterest);
 
      if (!alreadyExist) {
@@ -192,17 +260,18 @@ const NodeLink = (props) => {
          // console.log(newInterests)
      }
      console.log("Interest already exists in my list!")
-  }
+  }*/
 
   //const [state, setState]=useState(getElements(data))
 
   useEffect(() => {
+    colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    console.log(elementsCurr);
+    console.log(elementsCurr); //comment
 
     setElements([]);
-    setElements(elementsCurr);
-  }, [data]);
+    setElements(elementsCurr[0]);
+  }, [data, NodeLink.colors]);
 
   //const elements = getElements(data);
 
@@ -268,7 +337,7 @@ const NodeLink = (props) => {
         "background-opacity": 0.4,
         "line-color": "data(color)"
       }
-    }
+    }   
   ];
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -479,7 +548,7 @@ const NodeLink = (props) => {
   return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2"}} //creating space for nodes (rectangle)
+        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}} //creating space for nodes (rectangle)
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
@@ -490,6 +559,16 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph).run();
 
           cy.fit();
+          cy.on('mouseover','node', (event) => {  
+            if(event.cy.container('node')) {
+              event.cy.container('node').style.cursor = 'pointer';
+            }
+          })
+          cy.on('mouseout','node', (event) => {
+            if(event.cy.container('node')) {
+              event.cy.container('node').style.cursor = 'default';
+            }
+          })
 
           let defaultsLevel0 = {
             selector: "node[level=0]",
@@ -664,7 +743,7 @@ const NodeLink = (props) => {
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
             activePadding: 8, // additional size in pixels for the active command
-            indicatorSize: 24, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
+            indicatorSize: 30, // the size in pixels of the pointer to the active command, will default to the node size if the node size is smaller than the indicator size,
             separatorWidth: 3, // the empty spacing in pixels between successive commands
             spotlightPadding: 8, // extra spacing in pixels between the element and the spotlight
             adaptativeNodeSpotlightRadius: true, // specify whether the spotlight radius should adapt to the node size
@@ -772,6 +851,15 @@ const NodeLink = (props) => {
   
                   // whether the command is selectable
               },
+              {//DELETE INTEREST NEU
+                content: "Delete",
+                select: function (ele) {
+                  const interest = ele.data(); // Get the interest data
+                  deleteInterest(interest); // Call the deleteInterest function
+                },
+                enabled: true
+              }
+              ,
               {
                 content: "Read more",
                 select: function(ele) {
@@ -827,6 +915,7 @@ const NodeLink = (props) => {
                 },
                 enabled: true // whether the command is selectable
               },
+              {content: "Delete"},
               {
                 // example command
 

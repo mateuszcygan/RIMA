@@ -4,6 +4,8 @@ import {Button, Checkbox, CircularProgress, Grid, Menu, MenuItem, Typography} fr
 import FilterListIcon from "@material-ui/icons/FilterList";
 import NodeLink from "./GetNodeLinkExplore";
 import RestAPI from "../../../../../Services/api";
+import PaletteIcon from '@material-ui/icons/Palette';
+import { Divider } from '@material-ui/core';
 
 
 const Explore = (props) => {
@@ -205,11 +207,145 @@ const Explore = (props) => {
 
     setState({...state, checked: checkedNew, graphData: newNodeData});
   };
+
+  const defaultSet = [
+    "#397367",
+    "#160C28",
+    "#EFCB68",
+    "#C89FA3",
+    "#368F8B",
+    "#232E21",
+    "#B6CB9E",
+    "#92B4A7",
+    "#8C8A93",
+    "#8C2155",
+    "#22577A",
+    "#7FD8BE",
+    "#875C74",
+    "#9E7682",
+    "#FCAB64",
+    "#EDCB96",
+    "#231942",
+    "#98B9F2"
+  ];
+  
+  const colSet2 = [
+    "#1e81b0",
+    "#e28743",
+    "#696258",
+    "#eab676",
+    "#76b5c5",
+    "#21130d",
+    "#6a66c7",
+    "#873e23",
+    "#063970",
+    "#22cccc",
+    "#aa9999",
+    "#888888",
+    "#57b8bc",
+    "#259faf",
+    "#044553",
+    "#585551",
+    "#6bc7e6",
+    "#fdb872"
+  ];
+
+  const colSet3 = [
+    "#e6194B",
+    "#f58231",
+    "#ffc107",
+    "#CDDC39", 
+    "#3cb44b",
+    "#42d4f4",
+    "#4363d8",
+    "#911eb4",
+    "#bb33ff",
+    "#ff6699",
+    "#CDDC39", 
+    "#3cb44b",
+    "#42d4f4",
+    "#4363d8",
+    "#911eb4",
+    "#bb33ff",
+    "#ff6699",
+    "#CDDC39"
+];
+
+  const colSet4 = [
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF",
+    "#11DC11",
+    "#E61313",
+    "#720AD8",
+    "#2F7D7C", 
+    "#FF6DB6",
+    "#0085FF"
+  ];
+
+  const [nodeColors, setNodeColors] = useState(defaultSet);
+
+  const [selectedColorBox, setSelectedColorBox] = useState(1);
+
+  const [stateColor, setStateColor] = useState({
+    openColorsMenu: null,
+    checked: 1,
+  });
+
+  const handleColorChange = (index) => {
+    // Logic to handle color change based on the selected checkbox
+    if (index === 1) {
+      setNodeColors(defaultSet);
+    } else if (index === 2) {
+      setNodeColors(colSet2);
+    } else if (index === 3) {
+      setNodeColors(colSet3);
+    } else if (index === 4) {
+      setNodeColors(colSet4);
+    }
+  };
+
+  const handleSelectedColorBox = (index) => {
+    if (index === 1) {
+      setSelectedColorBox(1);
+    } else if (index === 2) {
+      setSelectedColorBox(2);
+    } else if (index === 3) {
+      setSelectedColorBox(3);
+    } else if (index === 4) {
+      setSelectedColorBox(4);
+    }
+  };
+
+  const handleOpenNodeColorsMenu = (event) => {
+    setStateColor({...stateColor, openColorsMenu: event.currentTarget});
+    console.log(stateColor);
+  };
+
+  const handleCloseNodeColorsMenu = () => {
+    setStateColor({ ...stateColor, openColorsMenu: null });
+    console.log(stateColor);
+  };
+
+  useEffect(() => {
+    NodeLink.colors = nodeColors;
+    // console.log(nodeColors);
+  }, [nodeColors]);
+
   return (
 
     <>
-      <Grid container justify="flex-end" style={{paddingTop: 24, paddingBottom: 8}}>
-        <Button startIcon={<FilterListIcon/>} color="primary" onClick={handleOpenMenu}>
+      <Grid container justify="space-between" style={{paddingTop: 24, paddingBottom: 8}}>
+        <Button startIcon={<FilterListIcon/>} color="primary" onClick={handleOpenMenu} style={{ order: 2 }}>
           Filter interests
         </Button>
         {data?<Menu
@@ -234,14 +370,84 @@ const Explore = (props) => {
             );
           }) : <></>}
         </Menu>:<></>}
+        <Button 
+          startIcon={<PaletteIcon/>} 
+          color="primary" 
+          onClick={handleOpenNodeColorsMenu} 
+          style={{ order: 1 }}
+        >
+          Change colors of nodes
+        </Button>
+        {stateColor.openColorsMenu && (
+      <Menu
+      id="nodeColorsMenu"
+      anchorEl={stateColor.openColorsMenu}
+      open={Boolean(stateColor.openColorsMenu)}
+      onClose={handleCloseNodeColorsMenu}
+    >
+      <MenuItem disabled>
+        <Typography variant="body1">sets of colors</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={selectedColorBox === 1}
+          onChange={() => {
+            handleColorChange(1);
+            handleSelectedColorBox(1);
+            console.log('Set of colors changed to default set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">midnight shadows</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={selectedColorBox === 2}
+          onChange={() => {
+            handleColorChange(2);
+            handleSelectedColorBox(2);
+            console.log('Set of colors changed to second set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">deep ocean</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Checkbox
+          checked={selectedColorBox === 3}
+          onChange={() => {
+            handleColorChange(3);
+            handleSelectedColorBox(3);
+            console.log('Set of colors changed to third set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">spring meadow</Typography>
+      </MenuItem>
+      <Divider /> 
+      <MenuItem>
+        <Checkbox
+          checked={selectedColorBox === 4}
+          onChange={() => {
+            handleColorChange(4);
+            handleSelectedColorBox(4);
+            console.log('Set of colors changed to fourth set');
+            nodeColors.forEach(element => console.log(element));
+          }}
+        />
+        <Typography variant="body1">accessible colors</Typography>
+      </MenuItem>
+    </Menu>
+    )}
       </Grid>
       <Grid container>
         <Grid item xs={1}/>
         <Grid item xs={10}>
-          {data ? <NodeLink data={state.graphData} keywords={keywords}/> : <Loading/>}
+        {data ? <NodeLink data={state.graphData} keywords={keywords} setKeywords={setKeywords} colors={nodeColors} /> : <Loading />}
         </Grid>
         <Grid item xs={1}/>
       </Grid>
+      
     </>
 
   );
