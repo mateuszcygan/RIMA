@@ -217,7 +217,7 @@ const NodeLink = (props) => {
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
-      // const elementToRemove = elements[elementIndex]; - nicht benutzt
+      const elementToRemove = elements[elementIndex]; // nicht benutzt
       elements.splice(elementIndex, 1);
 
       const sourceEdges = elements.filter(
@@ -242,16 +242,16 @@ const NodeLink = (props) => {
 
       console.log(elements);
 
-      /* besser auskommentieren für bessere Performanz
+      //besser auskommentieren für bessere Performanz
       const connectedNodes = elements.filter(
         (element) => element.data.source === elementToRemove.data.id
       );
       connectedNodes.forEach((node) => {
       deleteInterest(node.data.id);
-      }); */
+      });
   
       try {
-        const msg = `The interest "${element.label}" has been removed.`;
+        const msg = `The interest "${element.label}" has been deleted.`;
         toast.success(msg, {
           toastId: "addLevel2",
           autoClose: 3000 // Display for 3 seconds
@@ -723,23 +723,33 @@ const NodeLink = (props) => {
                     select: function (ele) {
                       let succ = ele.successors().targets();
                       let edges = ele.successors();
-
+    
                       edges.style("opacity", 0)
+                      .style("background-color", "background-color")
                       .animate({
                         style: { opacity: 1 },
-                        duration: 600,
+                        duration: 750,
                         easing: "ease-in-sine",
-                        queue: false
+                        queue: false,
+                        complete: function () {
+                          edges.style("background-color", ele.css("background-color"));
+                        }
                       });
-                  
+                
                       succ.style("opacity", 0)
+                        .style("background-color", "background-color")
+                        .style("width", 0)
+                        .style("height", 0)
                         .animate({
-                          style: { opacity: 1 },
-                          duration: 600,
+                          style: { opacity: 1, width: 200, height: 200 },
+                          duration: 750, // Adjust the duration value to control the speed (in milliseconds)
                           easing: "ease-in-sine",
-                          queue: false
+                          queue: false,
+                          complete: function () {
+                            succ.style("background-color", ele.css("background-color"));
+                          }
                         });
-
+    
                         
                   
                     let ids = [];
@@ -752,7 +762,7 @@ const NodeLink = (props) => {
                       );
                       console.log(ids, "test");
                     });
-
+    
                     /*succ.map((s) => {
                       s.removeClass("collapsed");
                     });*/
@@ -762,40 +772,14 @@ const NodeLink = (props) => {
       
                       // whether the command is selectable
                   },
-                  {
+                  { 
                     content: "Delete",
                     contentStyle: {},
                     select: function (ele) {
-                      let currInterest = ele.data()["label"];
-                      let msg = "The interest " + currInterest + " has been removed";
-                      toast.error(msg, { toastId: "removedLevel2" });
-                  
-                      ele.animate({
-                        style: { opacity: 0, width: 0, height: 0 },
-                        duration: 600,
-                        easing: "ease-in-sine",
-                        queue: false,
-                        complete: function () {
-                          ele.addClass("collapsed");
-                          ele.remove();
-                          console.log(elements);
-                        }
-                      });
-                  
-                      let edges = ele.connectedEdges();
-                  
-                      edges.animate({
-                        style: { opacity: 0, width: 0 },
-                        duration: 600,
-                        easing: "ease-in-sine",
-                        queue: false,
-                        complete: function () {
-                          edges.remove();
-                        }
-                      });
+                      handleOpenDelete(ele);
                     },
                     enabled: true
-                  },              
+                  },
                   {
                     content: "Add to my interests", // html/text content to be displayed in the menu
                     contentStyle: {}, // css key:value pairs to set the command's css in js if you want
@@ -830,6 +814,14 @@ const NodeLink = (props) => {
                     select: function(ele) {
                       const url = ele.data('url');
                       window.open(url, '_blank');
+                    },
+                    enabled: true
+                  },
+                  {
+                    content: "Delete",
+                    contentStyle: {},
+                    select: function (ele) {
+                      handleOpenDelete(ele);
                     },
                     enabled: true
                   }
@@ -952,6 +944,14 @@ const NodeLink = (props) => {
                 select: function(ele) {
                   const url = ele.data('url');
                   window.open(url, '_blank');
+                },
+                enabled: true
+              },
+              {
+                content: "Delete",
+                contentStyle: {},
+                select: function (ele) {
+                  handleOpenDelete(ele);
                 },
                 enabled: true
               }
@@ -1265,6 +1265,24 @@ const NodeLink = (props) => {
             Close
           </Button>
         </DialogActions>
+      </Dialog>
+      <Dialog open={deleteOpen.openDelete} onClose={handleCloseDelete}>
+        {deleteOpen.nodeObj !== null ? (
+        <DialogTitle>Are you sure you want to delete the interest: {deleteOpen.nodeObj.label} ?</DialogTitle> 
+        ): (
+        <DialogTitle></DialogTitle>  
+        )}
+        <DialogActions>
+          <Button variant="contained" onClick={handleCloseDelete} color="primary">
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={() => {
+            deleteInterest(deleteOpen.nodeObj);
+            handleCloseDelete();
+            }} color="secondary">
+          Delete
+          </Button>
+          </DialogActions>
       </Dialog>
     </>
   );
