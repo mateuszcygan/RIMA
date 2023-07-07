@@ -552,7 +552,7 @@ const NodeLink = (props) => {
       elements.push(newNode, newEdge);
 
       // Fetch related articles
-      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
+      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=100&titles=${article.title}&callback=handleRelatedResponse`;
 
       const script = document.createElement('script');
       script.src = relatedUrl;
@@ -562,11 +562,36 @@ const NodeLink = (props) => {
     }
   };
 
+  const sortLinks = (links) => {
+    // Count the occurrences of each link
+    const occurrenceCounts = links.reduce((counts, link) => {
+      counts[link.title] = (counts[link.title] || 0) + 1;
+      return counts;
+    }, {});
+  
+    // Sort the links based on occurrence count in descending order
+    const sortedLinks = links.sort((a, b) => occurrenceCounts[b.title] - occurrenceCounts[a.title]);
+  
+    return sortedLinks;
+  };
+
   useEffect(() => {
     window.handleRelatedResponse = (data) => {
       const pageId = Object.keys(data.query.pages)[0];
       const currentLength = relatedArticles.length;
-      const newRelatedArticles = data.query.pages[pageId].links.map((link, index) => {
+
+      const links = data.query.pages[pageId].links;
+      console.log("All links", links);
+
+      // Filter and sort the links based on occurrence count
+      const sortedLinks = sortLinks(links);
+
+      // Get the top 3 links
+      const topThreeLinks = sortedLinks.slice(0, 3);
+      console.log("These are the top three links", topThreeLinks);
+      
+      // Process the top 3 links
+      const newRelatedArticles = topThreeLinks.map((link, index) => {
         const targetId = -2 - Math.floor((currentLength + index) / 6);
         const sourceId = 250 + index + currentLength;
         const newNode = {
@@ -574,10 +599,10 @@ const NodeLink = (props) => {
             id: sourceId,
             target: targetId,
             label: link.title,
-            level: 2, 
+            level: 2,
             color: "#808080",
             pageData: "",
-            url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(' ', '_')}`,
+            url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(" ", "_")}`,
           },
           classes: ["level2", "collapsed"],
           style: {
@@ -596,17 +621,16 @@ const NodeLink = (props) => {
           },
           classes: ["level2"],
         };
-  
+
         console.log(elements);
         elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
         console.log(elements);
 
         return [newNode, newEdge]; // Return an array of node and edge objects
       });
-  
+
       setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
       console.log(relatedArticles);
-
     };
   }, [relatedArticles]);
 
