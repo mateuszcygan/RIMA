@@ -59,58 +59,71 @@ function getElements(data) {
   ];
   
   let currColors = [];
+  let uniqueTitles = [];
+
   try {
     data.map((d) => {
       let colors = getColor(currColors, colorPalette);
       currColors = colors[1];
       let label = d.title;
-      let explore = d.relatedTopics;
-      let idLevel1 = ids.pop();
-      let color = colors[0];
-      let element = {
-        data: {
-          id: idLevel1,
-          label: label,
-          level: 1,
-          color: color,
-          pageData: d.summary,
-          url: d.url
-        },
-        classes: ["level1"]
-      };
-      let edge = {
-        data: {source: -1, target: idLevel1, color: color},
-        classes: ["level1"]
-      };
-      elements.push(element, edge);
+
+      // Check if the interest title is already added
+      if (!uniqueTitles.includes(label)) {
+        uniqueTitles.push(label);
+        let explore = d.relatedTopics;
+        let idLevel1 = ids.pop();
+        let color = colors[0];
+        let element = {
+          data: {
+            id: idLevel1,
+            label: label,
+            level: 1,
+            color: color,
+            pageData: d.summary,
+            url: d.url
+          },
+          classes: ["level1"]
+        };
+        let edge = {
+          data: { source: -1, target: idLevel1, color: color },
+          classes: ["level1"]
+        };
+        elements.push(element, edge);
 
       explore.map((e) => {
         label = e.title;
         //idLevel2=idTarget+1
-        let idLevel2 = ids.pop();
-        element = {
-          data: {
-            id: idLevel2,
-            label: label,
-            level: 2,
-            color: color,
-            pageData: e.summary,
-            url: e.wikiURL
-          },
-          classes: ["level2"]
-        };
-        edge = {
-          data: {target: idLevel2, source: idLevel1, color: color},
-          classes: ["level2"]
-        };
+        // Check if the related topic title is already added
+        if (!uniqueTitles.includes(label)) {
+          uniqueTitles.push(label);
+          let idLevel2 = ids.pop();
+          element = {
+            data: {
+              id: idLevel2,
+              label: label,
+              level: 2,
+              color: color,
+              pageData: e.summary,
+              url: e.wikiURL
+            },
+            classes: ["level2"]
+          };
+          edge = {
+            data: { target: idLevel2, source: idLevel1, color: color },
+            classes: ["level2"]
+          };
 
-        elements.push(element, edge);
+          elements.push(element, edge);
 
         let relatedTopics = e.relatedTopics;
 
         relatedTopics.map((r) => {
           let idLevel3 = ids.pop();
           label = r.title;
+
+        // Check if the related topic title is already added
+        if (!uniqueTitles.includes(label)) {
+          uniqueTitles.push(label);
           element = {
             data: {
               id: idLevel3,
@@ -123,10 +136,9 @@ function getElements(data) {
             classes: ["collapsed", "level3"]
           };
           edge = {
-            data: {target: idLevel3, source: idLevel2, color: color},
+            data: { target: idLevel3, source: idLevel2, color: color },
             classes: ["collapsed", "level3"]
           };
-
           elements.push(element, edge);
 
           let currRelatedTopics = r.currRelatedTopics;
@@ -151,9 +163,9 @@ function getElements(data) {
             }; 
             elements.push(element, edge);
           });
-        });
-      });
-    })
+        }});
+      }});
+    }})
   } catch{
     elements = [
       {data: {id: -1, label: "Sorry, an error occurred.", level: 0, color: "red"}}
