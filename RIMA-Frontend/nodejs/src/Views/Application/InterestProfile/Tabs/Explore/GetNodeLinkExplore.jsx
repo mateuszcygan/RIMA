@@ -59,7 +59,6 @@ function getElements(data) {
   ];
   
   let currColors = [];
-  console.log(elements);
   try {
     data.map((d) => {
       let colors = getColor(currColors, colorPalette);
@@ -208,7 +207,8 @@ const NodeLink = (props) => {
   //Aktuelle Delete-Funktion
   const deleteInterest = async (element) => {
     let elementId = element.id
-    //console.log("element to delete:", elementId)
+    // console.log("element to delete:", elementId)
+
     // Find the index of the element in the elements array
     const elementIndex = elements.findIndex(
       (element) => element.data.id === elementId
@@ -217,12 +217,15 @@ const NodeLink = (props) => {
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
-      const elementToRemove = elements[elementIndex]; // nicht benutzt
+      //const elementToRemove = elements[elementIndex];
       elements.splice(elementIndex, 1);
 
       const sourceEdges = elements.filter(
         (element) => element.data.target === elementId
       );
+
+      //console.log("source Edges that should be deleted:", sourceEdges);
+
       sourceEdges.forEach((edge) => {
         const newEdgeIndex = elements.findIndex(
           (element) => element === edge
@@ -233,6 +236,7 @@ const NodeLink = (props) => {
       const connectedEdges = elements.filter(
         (element) => element.data.source === elementId
       );
+
       connectedEdges.forEach((edge) => {
         const edgeIndex = elements.findIndex(
           (element) => element === edge
@@ -240,15 +244,32 @@ const NodeLink = (props) => {
         elements.splice(edgeIndex, 1);
       });
 
-      console.log(elements);
+      /* console.log(elements); */
 
       //besser auskommentieren für bessere Performanz
-      const connectedNodes = elements.filter(
+      /* const connectedNodes = elements.filter(
         (element) => element.data.source === elementToRemove.data.id
       );
+      
+      
       connectedNodes.forEach((node) => {
       deleteInterest(node.data.id);
-      });
+      }); */
+
+      if (elementId < -1) {
+
+        const connectedNodes = elements.filter(
+          (element) => element.data.target == elementId
+        );
+        //console.log("connected nodes for manuals:", connectedNodes);
+
+        connectedNodes.forEach((node) => {
+          const nodeIndex = elements.findIndex(
+            (element) => element == node
+          );
+          elements.splice(nodeIndex, 1);
+        }); 
+      }
   
       try {
         const msg = `The interest "${element.label}" has been deleted.`;
@@ -270,6 +291,7 @@ const NodeLink = (props) => {
         autoClose: 3000 // Display for 3 seconds
       });
     }
+    console.log("Elements after removing", elements);
   };
   
 //ADD FUNKTION WURDE geändert, die alte ist unten
@@ -350,7 +372,7 @@ const NodeLink = (props) => {
   useEffect(() => {
     colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
-    console.log(elementsCurr); //comment
+    //console.log(elementsCurr);
 
     setElements([]);
     setElements(elementsCurr[0]);
@@ -518,9 +540,6 @@ const NodeLink = (props) => {
       const newSelectedArticles = [...selectedArticles, article];
       setSelectedArticles(newSelectedArticles);
   
-      console.log(newSelectedArticles);
-      console.log(selectedArticles);
-  
       const newNodeId = -2 - selectedArticles.length;
       const newNode = {
         data: {
@@ -558,7 +577,6 @@ const NodeLink = (props) => {
       script.src = relatedUrl;
       document.head.appendChild(script);
       
-      console.log(elements);
     }
   };
 
@@ -581,14 +599,14 @@ const NodeLink = (props) => {
       const currentLength = relatedArticles.length;
 
       const links = data.query.pages[pageId].links;
-      console.log("All links", links);
+      //console.log("All links", links);
 
       // Filter and sort the links based on occurrence count
       const sortedLinks = sortLinks(links);
 
       // Get the top 3 links
       const topThreeLinks = sortedLinks.slice(0, 3);
-      console.log("These are the top three links", topThreeLinks);
+      //console.log("These are the top three links", topThreeLinks);
       
       // Process the top 3 links
       const newRelatedArticles = topThreeLinks.map((link, index) => {
@@ -621,26 +639,17 @@ const NodeLink = (props) => {
           },
           classes: ["level2"],
         };
-
-        console.log(elements);
         elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
-        console.log(elements);
 
         return [newNode, newEdge]; // Return an array of node and edge objects
       });
 
       setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
-      console.log(relatedArticles);
+      elements.push(...relatedArticles);
+
+      //console.log("related articles", relatedArticles);
     };
   }, [relatedArticles]);
-
-  useEffect(() => {
-  console.log(relatedArticles);
-}, [relatedArticles]);
-
-  useEffect(() => {
-    console.log(elements);
-  }, [elements]);
 
   useEffect(() => {
     let timeoutId;
@@ -944,8 +953,8 @@ const NodeLink = (props) => {
                   if (relatedArticles.length === 6) {
                     elements.push(...relatedArticles);
                     relatedArticles.push({});
-                    console.log("Related articles for first manual added.");
-                    console.log(relatedArticles);
+                    //console.log("Related articles for first manual added.");
+                    //console.log(relatedArticles);
                   }
                   const targetId = parseInt(ele.data("id"));
 
@@ -955,7 +964,7 @@ const NodeLink = (props) => {
                       element.classes = element.classes.filter(cls => cls !== "collapsed");
                     }
                   });
-                  console.log(elements);
+                  console.log("Elements after expanding:", elements);
                   cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
                   handleExpandClick(ele);
               },

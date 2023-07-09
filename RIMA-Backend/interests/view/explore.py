@@ -126,7 +126,7 @@ def getDataExplore(interests):
     for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
-        time.sleep(3)
+        time.sleep(8)
         data.append(currData)
         print(data, "data interest") """
     
