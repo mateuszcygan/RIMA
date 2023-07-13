@@ -181,7 +181,7 @@ function getElements(data) {
 
 
 const NodeLink = (props) => {
-  const {data, keywords,setKeywords,colors} = props;
+  const {data, keywords, setKeywords, colors} = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
@@ -218,7 +218,8 @@ const NodeLink = (props) => {
 
   //Aktuelle Delete-Funktion
   const deleteInterest = async (element) => {
-    let elementId = element.id
+    let elementId = element.id;
+
     // console.log("element to delete:", elementId)
 
     // Find the index of the element in the elements array
@@ -381,6 +382,7 @@ const NodeLink = (props) => {
 
   //const [state, setState]=useState(getElements(data))
 
+  //Mateusz: when NodeLink.colors are changed (check box in color button), then graph should be rendered with new colors
   useEffect(() => {
     colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
@@ -481,7 +483,6 @@ const NodeLink = (props) => {
   const handleExpandClick = (ele) => {
     setSelectedNode(ele);
     setExpandDialogOpen(true);
-    // Other code specific to the provided Expand function...
   };
 
   const handleExpandDialogClose = () => {
@@ -536,9 +537,11 @@ const NodeLink = (props) => {
   }, []);
 
   const handleSelectArticle = (article) => {
-    const isDuplicate = selectedArticles.some(
-      (selectedArticle) => selectedArticle.title === article.title
+
+    const isDuplicate = elements.some(
+      (element) => element.data.label === article.title 
     );
+    console.log("isDuplicate", isDuplicate);
   
     if (isDuplicate) {
       const message = "You have already added " + article.title + " to your interests";
@@ -581,6 +584,7 @@ const NodeLink = (props) => {
       };
 
       elements.push(newNode, newEdge);
+      console.log("after adding manual interests", elements);
 
       // Fetch related articles
       const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=100&titles=${article.title}&callback=handleRelatedResponse`;
@@ -675,17 +679,6 @@ const NodeLink = (props) => {
     };
   }, [isExpandDialogOpen]);
 
-  /* //similar function needed
-  const getRelatedForManuals = async (target)=>{
-
-    const title={"interest":target}
-    const response = await RestAPI.getSimiliarInterestData(title)
-
-    const {data} = response
-
-    console.log(data);
-  } */
-
   return (
     <>
       <CytoscapeComponent
@@ -699,6 +692,7 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph);
           cy.layout(layoutGraph).run();
 
+          //Pia: after hovering over nodes, the default cursor changes to pointer (hand icon)
           cy.fit();
           cy.on('mouseover','node', (event) => {  
             if(event.cy.container('node')) {
@@ -842,15 +836,6 @@ const NodeLink = (props) => {
                     },
                     enabled: true // whether the command is selectable
                   }
-                  /* {
-                    content: "test ele.data()",
-                    contentStyle: {},
-                    select: function (ele) {
-                      const data = ele.data();
-                      console.log(data);
-                    },
-                    enabled: true,
-                  } */
                 ];
                } else {
                 return [
@@ -963,8 +948,8 @@ const NodeLink = (props) => {
                 contentStyle: {},
                 select: function (ele) {
                   if (relatedArticles.length === 6) {
-                    elements.push(...relatedArticles);
-                    relatedArticles.push({});
+                    elements.push(...relatedArticles); 
+                    relatedArticles.push({classes: ["level2", "collapsed"]}); //unbedingt verbessern!
                     //console.log("Related articles for first manual added.");
                     //console.log(relatedArticles);
                   }
@@ -1235,7 +1220,7 @@ const NodeLink = (props) => {
             atMouse: false, // draw menu at mouse position
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           }
-          let menu4 = cy.cxtmenu(defaultsLevel4);
+          let menu4 = cy.cxtmenu(defaultsLevel4); //Pia: 
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
