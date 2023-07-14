@@ -219,6 +219,8 @@ const NodeLink = (props) => {
   //Aktuelle Delete-Funktion
   const deleteInterest = async (element) => {
     let elementId = element.id;
+    let elementLabel = element.label;
+    console.log("Label of an article: ", elementLabel);
 
     // console.log("element to delete:", elementId)
 
@@ -282,7 +284,31 @@ const NodeLink = (props) => {
           );
           elements.splice(nodeIndex, 1);
         }); 
+
+        const relatedNodesAndEdges = relatedArticles.filter(
+          (relatedArticle) => relatedArticle.data.target == elementId
+        );
+
+        console.log("Related articles to node ", elementId, relatedNodesAndEdges);
+
+        relatedNodesAndEdges.forEach((element) => {
+          const elementIndex = relatedArticles.findIndex(
+            (element) => element.data.target == elementId
+          );
+          relatedArticles.splice(elementIndex, 1);
+        });
+
+        selectedArticles.forEach((selectedArticle) => {
+          const selectedArticleIndex = selectedArticles.findIndex(
+            (selectedArticle) => selectedArticle.title == elementLabel
+          );
+          selectedArticles.splice(selectedArticleIndex, 1);
+        });
       }
+
+      console.log("relatedArticles after removing: ", relatedArticles);
+
+
   
       try {
         const msg = `The interest "${element.label}" has been deleted.`;
@@ -587,7 +613,7 @@ const NodeLink = (props) => {
       console.log("after adding manual interests", elements);
 
       // Fetch related articles
-      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=100&titles=${article.title}&callback=handleRelatedResponse`;
+      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
 
       const script = document.createElement('script');
       script.src = relatedUrl;
@@ -949,7 +975,7 @@ const NodeLink = (props) => {
                 select: function (ele) {
                   if (relatedArticles.length === 6) {
                     elements.push(...relatedArticles); 
-                    relatedArticles.push({classes: ["level2", "collapsed"]}); //unbedingt verbessern!
+                    /* relatedArticles.push({classes: ["level2", "collapsed"]}); */ //unbedingt verbessern!
                     //console.log("Related articles for first manual added.");
                     //console.log(relatedArticles);
                   }
