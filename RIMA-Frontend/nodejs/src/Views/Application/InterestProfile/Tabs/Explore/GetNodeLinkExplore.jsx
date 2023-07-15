@@ -176,10 +176,6 @@ function getElements(data) {
   
 }
 
-
-
-
-
 const NodeLink = (props) => {
   const {data, keywords, setKeywords, colors} = props;
   const [elements, setElements] = useState([]);
@@ -213,8 +209,6 @@ const NodeLink = (props) => {
   const handleCloseDelete = () => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
-
-
 
   //Aktuelle Delete-Funktion
   const deleteInterest = async (element) => {
@@ -303,6 +297,7 @@ const NodeLink = (props) => {
             (selectedArticle) => selectedArticle.title == elementLabel
           );
           selectedArticles.splice(selectedArticleIndex, 1);
+          console.log("selected articles after removing one of them: ", selectedArticles); // potential problem
         });
       }
 
@@ -546,13 +541,13 @@ const NodeLink = (props) => {
     }
   };
 
-  // Function to open the Wikipedia page in a new tab
+  // Mateusz: function to open the Wikipedia page in a new tab
   const handlePreviewArticle = (event, article) => {
     event.stopPropagation();
     window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
-  useEffect(() => {
+  /* useEffect(() => { */
     window.handleResponse = (data) => {
       const fetchedArticles = data.query.search.map((article) => ({
         title: article.title,
@@ -560,7 +555,7 @@ const NodeLink = (props) => {
       }));
       setArticles(fetchedArticles);
     };
-  }, []);
+  /* }, []); */
 
   const handleSelectArticle = (article) => {
 
@@ -580,6 +575,7 @@ const NodeLink = (props) => {
     } else {
       const newSelectedArticles = [...selectedArticles, article];
       setSelectedArticles(newSelectedArticles);
+      console.log("Selected articles: ", selectedArticles); // potential problem
   
       const newNodeId = -2 - selectedArticles.length;
       const newNode = {
@@ -622,7 +618,7 @@ const NodeLink = (props) => {
     }
   };
 
-  const sortLinks = (links) => {
+  /* const sortLinks = (links) => {
     // Count the occurrences of each link
     const occurrenceCounts = links.reduce((counts, link) => {
       counts[link.title] = (counts[link.title] || 0) + 1;
@@ -633,9 +629,9 @@ const NodeLink = (props) => {
     const sortedLinks = links.sort((a, b) => occurrenceCounts[b.title] - occurrenceCounts[a.title]);
   
     return sortedLinks;
-  };
+  }; */
 
-  useEffect(() => {
+  /* useEffect(() => { */
     window.handleRelatedResponse = (data) => {
       const pageId = Object.keys(data.query.pages)[0];
       const currentLength = relatedArticles.length;
@@ -644,14 +640,14 @@ const NodeLink = (props) => {
       //console.log("All links", links);
 
       // Filter and sort the links based on occurrence count
-      const sortedLinks = sortLinks(links);
+      /* const sortedLinks = sortLinks(links); */
 
       // Get the top 3 links
-      const topThreeLinks = sortedLinks.slice(0, 3);
+      /* const topThreeLinks = sortedLinks.slice(0, 3); */
       //console.log("These are the top three links", topThreeLinks);
       
       // Process the top 3 links
-      const newRelatedArticles = topThreeLinks.map((link, index) => {
+      const newRelatedArticles = links.map((link, index) => {
         const targetId = -2 - Math.floor((currentLength + index) / 6);
         const sourceId = 250 + index + currentLength;
         const newNode = {
@@ -687,12 +683,13 @@ const NodeLink = (props) => {
       });
 
       setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
-      elements.push(...relatedArticles);
+      /* elements.push(...relatedArticles); */
 
       //console.log("related articles", relatedArticles);
     };
-  }, [relatedArticles]);
+  /* }, [relatedArticles]); */
 
+  // Mateusz: workaround so that the diagram with manual added nodes are rendered in the graph (pop-up window needed)
   useEffect(() => {
     let timeoutId;
     if (isExpandDialogOpen) {
@@ -973,12 +970,13 @@ const NodeLink = (props) => {
                 content: "Expand",
                 contentStyle: {},
                 select: function (ele) {
-                  if (relatedArticles.length === 6) {
+
+                  /* if (relatedArticles.length === 6) {
                     elements.push(...relatedArticles); 
-                    /* relatedArticles.push({classes: ["level2", "collapsed"]}); */ //unbedingt verbessern!
+                    relatedArticles.push({classes: ["level2", "collapsed"]}); //unbedingt verbessern!
                     //console.log("Related articles for first manual added.");
                     //console.log(relatedArticles);
-                  }
+                  } */
                   const targetId = parseInt(ele.data("id"));
 
                   elements.forEach(element => {
