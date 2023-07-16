@@ -210,19 +210,19 @@ const NodeLink = (props) => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
 
-  //Aktuelle Delete-Funktion
   const deleteInterest = async (element) => {
-    let elementId = element.id;
-    let elementLabel = element.label;
-    console.log("Label of an article: ", elementLabel);
+    console.log("all elements: ", elements);
 
-    // console.log("element to delete:", elementId)
+    let elementId = element.id;
+    let elementTitle = element.label;
+  
+    console.log("element to delete (id, title):", elementId, elementTitle);
 
     // Find the index of the element in the elements array
     const elementIndex = elements.findIndex(
       (element) => element.data.id === elementId
     );
-    //console.log("Zu löschende Index:", elementIndex)
+    console.log("index of an element that should be deleted: ", elementIndex)
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
@@ -230,10 +230,10 @@ const NodeLink = (props) => {
       elements.splice(elementIndex, 1);
 
       const sourceEdges = elements.filter(
-        (element) => element.data.target === elementId
+        (element) => element.data.target == elementId
       );
 
-      //console.log("source Edges that should be deleted:", sourceEdges);
+      console.log("source Edges that should be deleted:", sourceEdges);
 
       sourceEdges.forEach((edge) => {
         const newEdgeIndex = elements.findIndex(
@@ -291,14 +291,6 @@ const NodeLink = (props) => {
           );
           relatedArticles.splice(elementIndex, 1);
         });
-
-        selectedArticles.forEach((selectedArticle) => {
-          const selectedArticleIndex = selectedArticles.findIndex(
-            (selectedArticle) => selectedArticle.title == elementLabel
-          );
-          selectedArticles.splice(selectedArticleIndex, 1);
-          console.log("selected articles after removing one of them: ", selectedArticles); // potential problem
-        });
       }
 
       console.log("relatedArticles after removing: ", relatedArticles);
@@ -328,7 +320,7 @@ const NodeLink = (props) => {
     console.log("Elements after removing", elements);
   };
   
-//ADD FUNKTION WURDE geändert, die alte ist unten
+  //ADD FUNKTION WURDE geändert, die alte ist unten
   const addNewInterest = async (currInterest) => {
     const alreadyExist = keywords.some((interest) => interest.text === currInterest.toLowerCase());
   
@@ -496,7 +488,7 @@ const NodeLink = (props) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [articles, setArticles] = useState([]);
-  const [selectedArticles, setSelectedArticles] = useState([]);
+  //const [selectedArticles, setSelectedArticles] = useState([]);
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [isExpandDialogOpen, setExpandDialogOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -541,21 +533,19 @@ const NodeLink = (props) => {
     }
   };
 
-  // Mateusz: function to open the Wikipedia page in a new tab
+  // Mateusz: function to open the Wikipedia page in a new tab ("Read more" option in manual added nodes)
   const handlePreviewArticle = (event, article) => {
     event.stopPropagation();
     window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
-  /* useEffect(() => { */
-    window.handleResponse = (data) => {
-      const fetchedArticles = data.query.search.map((article) => ({
-        title: article.title,
-        link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
-      }));
-      setArticles(fetchedArticles);
-    };
-  /* }, []); */
+  window.handleResponse = (data) => {
+    const fetchedArticles = data.query.search.map((article) => ({
+      title: article.title,
+      link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+    }));
+    setArticles(fetchedArticles);
+  };
 
   const handleSelectArticle = (article) => {
 
@@ -573,11 +563,14 @@ const NodeLink = (props) => {
       });
       return;
     } else {
-      const newSelectedArticles = [...selectedArticles, article];
+      /* const newSelectedArticles = [...selectedArticles, article];
       setSelectedArticles(newSelectedArticles);
-      console.log("Selected articles: ", selectedArticles); // potential problem
+      console.log("selected articles: ", selectedArticles); */
   
-      const newNodeId = -2 - selectedArticles.length;
+      //Mateusz: id for manual added nodes is determined by the length of related articles
+      // after removing manual added node, related articles are also removed
+      const newNodeId = -2 - (relatedArticles.length/6); 
+      
       const newNode = {
         data: {
           id: newNodeId,
@@ -606,7 +599,6 @@ const NodeLink = (props) => {
       };
 
       elements.push(newNode, newEdge);
-      console.log("after adding manual interests", elements);
 
       // Fetch related articles
       const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
@@ -648,7 +640,7 @@ const NodeLink = (props) => {
       
       // Process the top 3 links
       const newRelatedArticles = links.map((link, index) => {
-        const targetId = -2 - Math.floor((currentLength + index) / 6);
+        const targetId = -2 - (currentLength / 6);
         const sourceId = 250 + index + currentLength;
         const newNode = {
           data: {
@@ -985,7 +977,7 @@ const NodeLink = (props) => {
                       element.classes = element.classes.filter(cls => cls !== "collapsed");
                     }
                   });
-                  console.log("Elements after expanding:", elements);
+                  //console.log("Elements after expanding:", elements);
                   cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
                   handleExpandClick(ele);
               },
