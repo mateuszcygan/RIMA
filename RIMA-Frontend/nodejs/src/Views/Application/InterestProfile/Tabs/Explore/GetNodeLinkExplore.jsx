@@ -1,6 +1,6 @@
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useState, useRef} from "react"
 //import './cytoscape.css';
 
 import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions, SvgIcon } from '@material-ui/core';
@@ -190,7 +190,7 @@ const NodeLink = (props) => {
  
 
   const handleOpenLearn = (ele) => {
-    const data = ele.data();
+    const data = ele.data(); //parameter that is passed to deleteInterests function
     setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
   };
   const handleCloseLearn = () => {
@@ -210,13 +210,39 @@ const NodeLink = (props) => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
 
+  //Mateusz: function needed for finding a node in a cytoscape graph by a certain id
+/*   function findNode(cy, propertyValue) {
+    const nodes = cy.nodes().filter((node) => node.data(propertyName) === propertyValue);
+    return nodes.length > 0 ? nodes[0] : null;
+  } */
+
+  //Mateusz: create a ref to store the cytoscape instance (needed at deleting related interests when a certain interest is deleted)
+  const cyRef = useRef(null);
+
+  //Mateusz: function to get the cytoscape instance
+  const getCytoscapeInstance = () => {
+    return cyRef.current;
+  };
+
+  //Mateusz: function to find a node within CytoscapeComponent with a specific id
+  const findNode = (cy, nodeId) => {
+    const ele = cy.nodes().filter((node) => node._private.data.id === nodeId);
+    return ele.data();
+    /* console.log(`data.() of element with ${nodeId}: `, ele.data()); */
+  };
+
   const deleteInterest = async (element) => {
+    const cy = getCytoscapeInstance();
+    console.log("cytoscape instance", cy);
+
+    console.log("Element in deleteInterests function as a parameter: ", element);
     console.log("all elements: ", elements);
 
     let elementId = element.id;
     let elementTitle = element.label;
   
     console.log("element to delete (id, title):", elementId, elementTitle);
+    findNode(cy, elementId);
 
     // Find the index of the element in the elements array
     const elementIndex = elements.findIndex(
@@ -226,25 +252,29 @@ const NodeLink = (props) => {
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
-      //const elementToRemove = elements[elementIndex];
+      const elementToRemove = elements[elementIndex];
       elements.splice(elementIndex, 1);
 
-      const sourceEdges = elements.filter(
-        (element) => element.data.target == elementId
+      //edge that connects an interest with the rest of the diagram (edge to be deleted is 'target' there)
+      const elementEdge = elements.filter(
+        (element) => element.data.target === elementId
       );
 
-      console.log("source Edges that should be deleted:", sourceEdges);
+      console.log("element edge that connects deleted interest to the diagram:", elementEdge);
 
-      sourceEdges.forEach((edge) => {
-        const newEdgeIndex = elements.findIndex(
+      elementEdge.forEach((edge) => {
+        const elementEdgeIndex = elements.findIndex(
           (element) => element === edge
         );
-        elements.splice(newEdgeIndex, 1);
+        elements.splice(elementEdgeIndex, 1);
       })
-      
+
+      //edges that start at interest to be deleted (source) and target at further interests
       const connectedEdges = elements.filter(
         (element) => element.data.source === elementId
       );
+
+      console.log("edges that go out of deleted interest: ", connectedEdges);
 
       connectedEdges.forEach((edge) => {
         const edgeIndex = elements.findIndex(
@@ -253,18 +283,51 @@ const NodeLink = (props) => {
         elements.splice(edgeIndex, 1);
       });
 
-      /* console.log(elements); */
+      //take targets of the interest that is deleted (nodes) - relatedInterests (they have a certain id), add them to an array in order to delete them as well later
+      const relatedInterests = [];
+      connectedEdges.forEach((edge) => {
+        console.log("edge target: ", edge.data.target);
+        const relatedInterest = elements.filter(
+          (element) => element.data.id === edge.data.target
+        );
+        relatedInterests.push(relatedInterest);
+      });
 
-      //besser auskommentieren für bessere Performanz
-      /* const connectedNodes = elements.filter(
-        (element) => element.data.source === elementToRemove.data.id
+      const flattenedRelatedInterests = relatedInterests.flat();
+
+      if (relatedInterests.length !== 0) {
+        flattenedRelatedInterests.forEach((relatedInterest) => {
+          const relatedInterestToDelete = findNode(cy, relatedInterest.data.id);
+          console.log("passed to deleteInterest: ", relatedInterestToDelete);
+          deleteInterest(relatedInterestToDelete);
+          /* console.log("related interests from flattened list: ", relatedInterest); */
+          /* deleteInterest(relatedInterest); */ //here should be an element of form ele.data() passed so that the function works correctly
+        });
+      }
+
+      //if the array of relatedIntersts is not empty, delete relatedInterests with their corresponding interests and nodes
+      /* if (relatedInterests.length !== 0) {
+        (relatedInterests.flat()).forEach((relatedInterest) => {
+          console.log("related interest that should be deleted: ", relatedInterest);
+          deleteInterest(relatedInterest);
+        });
+      } */
+
+      /* console.log(elements);
+
+      //besser auskommentiere""n für bessere Performanz
+      const connectedNodes = elements.filter(
+        (element) => element.data.source == elementToRemove.data.id
       );
+
+      console.log("connected nodes: ", connectedNodes);
       
-      
+      //great idea to call the function recursivly, but we don't have nodes that are connected to the origin node
       connectedNodes.forEach((node) => {
-      deleteInterest(node.data.id);
+        deleteInterest(node.data.id);
       }); */
 
+      // Mateusz: case of delete function for manual added nodes
       if (elementId < -1) {
 
         const connectedNodes = elements.filter(
@@ -295,8 +358,6 @@ const NodeLink = (props) => {
 
       console.log("relatedArticles after removing: ", relatedArticles);
 
-
-  
       try {
         const msg = `The interest "${element.label}" has been deleted.`;
         toast.success(msg, {
@@ -702,6 +763,9 @@ const NodeLink = (props) => {
         stylesheet={stylesheet}
         elements={elements}
         cy={(cy) => {
+          //Mateusz: store the cytoscape instance in the ref (needed for deleting function)
+          cyRef.current = cy;
+
           cy.elements().remove();
           cy.add(elements);
           cy.layout(layoutGraph);
@@ -831,6 +895,7 @@ const NodeLink = (props) => {
                     contentStyle: {},
                     select: function (ele) {
                       handleOpenDelete(ele);
+                      console.log("content of ele: ", ele);
                     },
                     enabled: true
                   },

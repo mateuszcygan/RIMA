@@ -122,8 +122,8 @@ def getDataNewInterestExplore(input):
     return data
 
 def getDataExplore(interests):
-    data=[]
-    """ for i in interests:
+    """ data=[]
+    for i in interests:
         print("\n\n\n",i, "new interests")
         currData=getDataNewInterestExplore(i)
         time.sleep(10)
