@@ -233,10 +233,10 @@ const NodeLink = (props) => {
 
   const deleteInterest = async (element) => {
     const cy = getCytoscapeInstance();
-    console.log("cytoscape instance", cy);
+    //console.log("cytoscape instance", cy);
 
-    console.log("Element in deleteInterests function as a parameter: ", element);
-    console.log("all elements: ", elements);
+    //console.log("Element in deleteInterests function as a parameter: ", element);
+    //console.log("all elements: ", elements);
 
     let elementId = element.id;
     let elementTitle = element.label;
@@ -248,7 +248,7 @@ const NodeLink = (props) => {
     const elementIndex = elements.findIndex(
       (element) => element.data.id === elementId
     );
-    console.log("index of an element that should be deleted: ", elementIndex)
+    //console.log("index of an element that should be deleted: ", elementIndex)
   
     if (elementIndex !== -1) {
       // Remove the element, nodes, and edges from the elements array
@@ -269,6 +269,7 @@ const NodeLink = (props) => {
         elements.splice(elementEdgeIndex, 1);
       })
 
+      console.log("elementId of current interest: ", elementId);
       //edges that start at interest to be deleted (source) and target at further interests
       const connectedEdges = elements.filter(
         (element) => element.data.source === elementId
@@ -283,26 +284,28 @@ const NodeLink = (props) => {
         elements.splice(edgeIndex, 1);
       });
 
-      //take targets of the interest that is deleted (nodes) - relatedInterests (they have a certain id), add them to an array in order to delete them as well later
-      const relatedInterests = [];
-      connectedEdges.forEach((edge) => {
-        console.log("edge target: ", edge.data.target);
-        const relatedInterest = elements.filter(
-          (element) => element.data.id === edge.data.target
-        );
-        relatedInterests.push(relatedInterest);
-      });
-
-      const flattenedRelatedInterests = relatedInterests.flat();
-
-      if (relatedInterests.length !== 0) {
-        flattenedRelatedInterests.forEach((relatedInterest) => {
-          const relatedInterestToDelete = findNode(cy, relatedInterest.data.id);
-          console.log("passed to deleteInterest: ", relatedInterestToDelete);
-          deleteInterest(relatedInterestToDelete);
-          /* console.log("related interests from flattened list: ", relatedInterest); */
-          /* deleteInterest(relatedInterest); */ //here should be an element of form ele.data() passed so that the function works correctly
+      if (elementId > -1 && elementId > 251) {
+        //take targets of the interest that is deleted (nodes) - relatedInterests (they have a certain id), add them to an array in order to delete them as well later
+        const relatedInterests = [];
+        connectedEdges.forEach((edge) => {
+          //console.log("edge target: ", edge.data.target);
+          const relatedInterest = elements.filter(
+            (element) => element.data.id === edge.data.target
+          );
+          relatedInterests.push(relatedInterest);
         });
+
+        const flattenedRelatedInterests = relatedInterests.flat();
+
+        if (relatedInterests.length !== 0) {
+          flattenedRelatedInterests.forEach((relatedInterest) => {
+            const relatedInterestToDelete = findNode(cy, relatedInterest.data.id);
+            //console.log("passed to deleteInterest: ", relatedInterestToDelete);
+            deleteInterest(relatedInterestToDelete);
+            /* console.log("related interests from flattened list: ", relatedInterest); */
+            /* deleteInterest(relatedInterest); */ //here should be an element of form ele.data() passed so that the function works correctly
+          });
+        }
       }
 
       //if the array of relatedIntersts is not empty, delete relatedInterests with their corresponding interests and nodes
@@ -328,12 +331,12 @@ const NodeLink = (props) => {
       }); */
 
       // Mateusz: case of delete function for manual added nodes
-      if (elementId < -1) {
+      if (elementId < -1 && elementId < 251) {
 
         const connectedNodes = elements.filter(
           (element) => element.data.target == elementId
         );
-        //console.log("connected nodes for manuals:", connectedNodes);
+        console.log("connected nodes for manuals:", connectedNodes);
 
         connectedNodes.forEach((node) => {
           const nodeIndex = elements.findIndex(
@@ -356,7 +359,7 @@ const NodeLink = (props) => {
         });
       }
 
-      console.log("relatedArticles after removing: ", relatedArticles);
+      //console.log("relatedArticles after removing: ", relatedArticles);
 
       try {
         const msg = `The interest "${element.label}" has been deleted.`;
@@ -378,7 +381,7 @@ const NodeLink = (props) => {
         autoClose: 3000 // Display for 3 seconds
       });
     }
-    console.log("Elements after removing", elements);
+    //console.log("Elements after removing", elements);
   };
   
   //ADD FUNKTION WURDE geändert, die alte ist unten
@@ -700,13 +703,14 @@ const NodeLink = (props) => {
       //console.log("These are the top three links", topThreeLinks);
       
       // Process the top 3 links
+      //need renaming targetId, sourceid, data.target => data.source
       const newRelatedArticles = links.map((link, index) => {
-        const targetId = -2 - (currentLength / 6);
-        const sourceId = 250 + index + currentLength;
+        const sourceId = -2 - (currentLength / 6);
+        const targetId = 250 + index + currentLength;
         const newNode = {
           data: {
-            id: sourceId,
-            target: targetId,
+            id: targetId,
+            target: sourceId,
             label: link.title,
             level: 2,
             color: "#808080",
@@ -724,6 +728,8 @@ const NodeLink = (props) => {
 
         const newEdge = {
           data: {
+            /* source: sourceId,
+            target: targetId, */
             source: sourceId,
             target: targetId,
             color: "#808080",
