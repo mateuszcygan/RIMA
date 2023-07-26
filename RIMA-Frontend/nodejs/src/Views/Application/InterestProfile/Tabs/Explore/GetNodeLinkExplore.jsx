@@ -210,179 +210,102 @@ const NodeLink = (props) => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
 
-  //Mateusz: function needed for finding a node in a cytoscape graph by a certain id
-/*   function findNode(cy, propertyValue) {
-    const nodes = cy.nodes().filter((node) => node.data(propertyName) === propertyValue);
-    return nodes.length > 0 ? nodes[0] : null;
-  } */
-
-  //Mateusz: create a ref to store the cytoscape instance (needed at deleting related interests when a certain interest is deleted)
+  //create a ref to store the cytoscape instance (needed for deleting related interests when a certain interest is deleted)
   const cyRef = useRef(null);
 
-  //Mateusz: function to get the cytoscape instance
+  //function to get the cytoscape instance
   const getCytoscapeInstance = () => {
     return cyRef.current;
   };
 
-  //Mateusz: function to find a node within CytoscapeComponent with a specific id
+  //function to find a node within CytoscapeComponent with a specific id that returns ele.data() (needed for deleteInterest)
   const findNode = (cy, nodeId) => {
     const ele = cy.nodes().filter((node) => node._private.data.id === nodeId);
     return ele.data();
-    /* console.log(`data.() of element with ${nodeId}: `, ele.data()); */
+    //console.log(`data.() of element with ${nodeId}: `, ele.data());
   };
 
+  //function that is responsible for deleting a certain interest and its related nodes
   const deleteInterest = async (element) => {
     const cy = getCytoscapeInstance();
     //console.log("cytoscape instance", cy);
 
-    //console.log("Element in deleteInterests function as a parameter: ", element);
-    //console.log("all elements: ", elements);
-
+    //store an id of an interest that should be deleted
     let elementId = element.id;
-    let elementTitle = element.label;
-  
-    console.log("element to delete (id, title):", elementId, elementTitle);
-    findNode(cy, elementId);
+    //console.log("element to delete (id, title):", elementId, elementTitle);
 
-    // Find the index of the element in the elements array
+    //find the index of the element that should be deleted in the 'elements' array
     const elementIndex = elements.findIndex(
       (element) => element.data.id === elementId
     );
-    //console.log("index of an element that should be deleted: ", elementIndex)
+    //console.log("index of an element that should be deleted: ", elementIndex);
   
-    if (elementIndex !== -1) {
-      // Remove the element, nodes, and edges from the elements array
-      const elementToRemove = elements[elementIndex];
-      elements.splice(elementIndex, 1);
+    //remove the element 
+    elements.splice(elementIndex, 1);
 
-      //edge that connects an interest with the rest of the diagram (edge to be deleted is 'target' there)
-      const elementEdge = elements.filter(
-        (element) => element.data.target === elementId
-      );
+    //find an edge that connects the deleted interest with the rest of the diagram (edge to be deleted is 'target' there)
+    const elementEdge = elements.find(
+      (element) => element.data.target === elementId
+    );
+    //console.log("edge that connects deleted interest to the diagram:", elementEdge);
 
-      console.log("element edge that connects deleted interest to the diagram:", elementEdge);
-
-      elementEdge.forEach((edge) => {
-        const elementEdgeIndex = elements.findIndex(
-          (element) => element === edge
-        );
-        elements.splice(elementEdgeIndex, 1);
-      })
-
-      console.log("elementId of current interest: ", elementId);
-      //edges that start at interest to be deleted (source) and target at further interests
-      const connectedEdges = elements.filter(
-        (element) => element.data.source === elementId
-      );
-
-      console.log("edges that go out of deleted interest: ", connectedEdges);
-
-      connectedEdges.forEach((edge) => {
-        const edgeIndex = elements.findIndex(
-          (element) => element === edge
-        );
-        elements.splice(edgeIndex, 1);
-      });
-
-      if (elementId > -1 && elementId > 251) {
-        //take targets of the interest that is deleted (nodes) - relatedInterests (they have a certain id), add them to an array in order to delete them as well later
-        const relatedInterests = [];
-        connectedEdges.forEach((edge) => {
-          //console.log("edge target: ", edge.data.target);
-          const relatedInterest = elements.filter(
-            (element) => element.data.id === edge.data.target
-          );
-          relatedInterests.push(relatedInterest);
-        });
-
-        const flattenedRelatedInterests = relatedInterests.flat();
-
-        if (relatedInterests.length !== 0) {
-          flattenedRelatedInterests.forEach((relatedInterest) => {
-            const relatedInterestToDelete = findNode(cy, relatedInterest.data.id);
-            //console.log("passed to deleteInterest: ", relatedInterestToDelete);
-            deleteInterest(relatedInterestToDelete);
-            /* console.log("related interests from flattened list: ", relatedInterest); */
-            /* deleteInterest(relatedInterest); */ //here should be an element of form ele.data() passed so that the function works correctly
-          });
-        }
-      }
-
-      //if the array of relatedIntersts is not empty, delete relatedInterests with their corresponding interests and nodes
-      /* if (relatedInterests.length !== 0) {
-        (relatedInterests.flat()).forEach((relatedInterest) => {
-          console.log("related interest that should be deleted: ", relatedInterest);
-          deleteInterest(relatedInterest);
-        });
-      } */
-
-      /* console.log(elements);
-
-      //besser auskommentiere""n für bessere Performanz
-      const connectedNodes = elements.filter(
-        (element) => element.data.source == elementToRemove.data.id
-      );
-
-      console.log("connected nodes: ", connectedNodes);
-      
-      //great idea to call the function recursivly, but we don't have nodes that are connected to the origin node
-      connectedNodes.forEach((node) => {
-        deleteInterest(node.data.id);
-      }); */
-
-      // Mateusz: case of delete function for manual added nodes
-      if (elementId < -1 && elementId < 251) {
-
-        const connectedNodes = elements.filter(
-          (element) => element.data.target == elementId
-        );
-        console.log("connected nodes for manuals:", connectedNodes);
-
-        connectedNodes.forEach((node) => {
-          const nodeIndex = elements.findIndex(
-            (element) => element == node
-          );
-          elements.splice(nodeIndex, 1);
-        }); 
-
-        const relatedNodesAndEdges = relatedArticles.filter(
-          (relatedArticle) => relatedArticle.data.target == elementId
-        );
-
-        console.log("Related articles to node ", elementId, relatedNodesAndEdges);
-
-        relatedNodesAndEdges.forEach((element) => {
-          const elementIndex = relatedArticles.findIndex(
-            (element) => element.data.target == elementId
-          );
-          relatedArticles.splice(elementIndex, 1);
-        });
-      }
-
-      //console.log("relatedArticles after removing: ", relatedArticles);
-
-      try {
-        const msg = `The interest "${element.label}" has been deleted.`;
-        toast.success(msg, {
-          toastId: "addLevel2",
-          autoClose: 3000 // Display for 3 seconds
-      });
-      } catch (err) {
-        console.log("Error adding interest:", err);
-        toast.error("Failed to remove the interest. Please try again later.", {
-          toastId: "addLevel2",
-          autoClose: 3000 // Display for 3 seconds
-        });
-      }
+    //delete an edge that connects the deleted interest with the rest of the diagram
+    if (elementEdge) {
+      const elementEdgeIndex = elements.indexOf(elementEdge);
+      elements.splice(elementEdgeIndex, 1);
     }
-    else {
+
+    //filter edges that start at interest that should be deleted (source) and target at related interests
+    const connectedEdges = elements.filter(
+      (element) => element.data.source === elementId
+    );
+    //console.log("edges that go out of deleted interest: ", connectedEdges);
+
+    //delete edges that start at interest that should be deleted at target at related interests
+    connectedEdges.forEach((edge) => {
+      const edgeIndex = elements.findIndex(
+        (element) => element === edge
+      );
+      elements.splice(edgeIndex, 1);
+    });
+
+    //create an array that stores nodes of related interests 
+    //(needed for recursive call - further interests should also be deleted)
+    const relatedInterests = [];
+
+    //find nodes of related interests that were connected to the graph with connectedEdges (edges that go out of interests that should be deleted)
+    connectedEdges.forEach((edge) => {
+      //console.log("edge target: ", edge.data.target);
+      const relatedInterest = elements.filter(
+        (element) => element.data.id === edge.data.target
+      );
+      relatedInterests.push(relatedInterest);
+    });
+
+    const flattenedRelatedInterests = relatedInterests.flat();
+    //console.log("related interests to deleted node: ", flattenedRelatedInterests);
+
+    //call recursively 'deleteInterest' for every related interest
+    if (relatedInterests.length !== 0) {
+      flattenedRelatedInterests.forEach((relatedInterest) => {
+        const relatedInterestToDelete = findNode(cy, relatedInterest.data.id);
+        deleteInterest(relatedInterestToDelete);
+      });
+    }
+    try {
+      const msg = "The delete operation completed successfully.";
+      toast.success(msg, {
+        toastId: "addLevel2",
+        autoClose: 3000 // Display for 3 seconds
+    });
+    } catch (err) {
+      console.log("Error adding interest:", err);
       toast.error("Failed to remove the interest. Please try again later.", {
         toastId: "addLevel2",
         autoClose: 3000 // Display for 3 seconds
       });
     }
-    //console.log("Elements after removing", elements);
-  };
+  }
   
   //ADD FUNKTION WURDE geändert, die alte ist unten
   const addNewInterest = async (currInterest) => {
@@ -710,7 +633,8 @@ const NodeLink = (props) => {
         const newNode = {
           data: {
             id: targetId,
-            target: sourceId,
+            source: sourceId,
+            /* target: sourceId */
             label: link.title,
             level: 2,
             color: "#808080",
@@ -1040,10 +964,10 @@ const NodeLink = (props) => {
                     //console.log("Related articles for first manual added.");
                     //console.log(relatedArticles);
                   } */
-                  const targetId = parseInt(ele.data("id"));
+                  const sourceId = parseInt(ele.data("id"));
 
                   elements.forEach(element => {
-                    if (element.data.target === targetId) {
+                    if (element.data.source === sourceId) {
                       // Remove "collapsed" class from the element
                       element.classes = element.classes.filter(cls => cls !== "collapsed");
                     }
