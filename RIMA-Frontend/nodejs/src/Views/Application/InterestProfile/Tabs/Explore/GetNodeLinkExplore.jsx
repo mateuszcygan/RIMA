@@ -569,9 +569,9 @@ const NodeLink = (props) => {
         },
         classes: ["level1"],
         style: {
-          width: 155,
-          height: 155,
-          shape: "roundrectangle",
+          width: 185,
+          height: 185,
+          shape: "octagon",
           opacity: "0.8",
         },
       };
@@ -634,7 +634,6 @@ const NodeLink = (props) => {
           data: {
             id: targetId,
             source: sourceId,
-            /* target: sourceId */
             label: link.title,
             level: 2,
             color: "#808080",
@@ -643,17 +642,15 @@ const NodeLink = (props) => {
           },
           classes: ["level2", "collapsed"],
           style: {
-            width: 155,
-            height: 155,
-            shape: "roundrectangle",
+            width: 185,
+            height: 185,
+            shape: "octagon",
             opacity: "0.8",
           },
         };
 
         const newEdge = {
           data: {
-            /* source: sourceId,
-            target: targetId, */
             source: sourceId,
             target: targetId,
             color: "#808080",
@@ -672,7 +669,7 @@ const NodeLink = (props) => {
     };
   /* }, [relatedArticles]); */
 
-  // Mateusz: workaround so that the diagram with manual added nodes are rendered in the graph (pop-up window needed)
+  //workaround so that the diagram with manual added nodes are rendered in the graph (pop-up window needed)
   useEffect(() => {
     let timeoutId;
     if (isExpandDialogOpen) {
