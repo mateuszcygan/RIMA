@@ -15,6 +15,7 @@ import WikipediaLogo from "./Wikipedia-logo.png"
 
 cytoscape.use(cxtmenu);
 
+//default color palette (color button)
 let colorPalette = [
   "#397367",
   "#160C28",
@@ -36,6 +37,7 @@ let colorPalette = [
   "#98B9F2"
 ];
 
+//additional function parameter for colors (color button)
 function getColor(currColors, colors) {
 
   const allColors = colors;
@@ -67,7 +69,7 @@ function getElements(data) {
       currColors = colors[1];
       let label = d.title;
 
-      // Check if the interest title is already added
+      //check if the interest title is already added (get rid of doublings)
       if (!uniqueTitles.includes(label)) {
         uniqueTitles.push(label);
         let explore = d.relatedTopics;
@@ -92,8 +94,7 @@ function getElements(data) {
 
       explore.map((e) => {
         label = e.title;
-        //idLevel2=idTarget+1
-        // Check if the related topic title is already added
+        //check if the related topic title is already added (get rid of doublings)
         if (!uniqueTitles.includes(label)) {
           uniqueTitles.push(label);
           let idLevel2 = ids.pop();
@@ -121,7 +122,7 @@ function getElements(data) {
           let idLevel3 = ids.pop();
           label = r.title;
 
-        // Check if the related topic title is already added
+        //check if the related topic title is already added (get rid of doublings)
         if (!uniqueTitles.includes(label)) {
           uniqueTitles.push(label);
           element = {
@@ -190,7 +191,7 @@ const NodeLink = (props) => {
  
 
   const handleOpenLearn = (ele) => {
-    const data = ele.data(); //parameter that is passed to deleteInterests function
+    const data = ele.data(); //parameter that is passed to deleteInterests function (delete function)
     setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
   };
   const handleCloseLearn = () => {
@@ -210,22 +211,22 @@ const NodeLink = (props) => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
 
-  //create a ref to store the cytoscape instance (needed for deleting related interests when a certain interest is deleted)
+  //create a ref to store the cytoscape instance (delete function: needed for deleting related interests when a certain interest is deleted)
   const cyRef = useRef(null);
 
-  //function to get the cytoscape instance
+  //function to get the cytoscape instance (delete function)
   const getCytoscapeInstance = () => {
     return cyRef.current;
   };
 
-  //function to find a node within CytoscapeComponent with a specific id that returns ele.data() (needed for deleteInterest)
+  //function to find a node within CytoscapeComponent with a specific id that returns ele.data() (delete function: needed for deleteInterest)
   const findNode = (cy, nodeId) => {
     const ele = cy.nodes().filter((node) => node._private.data.id === nodeId);
     return ele.data();
     //console.log(`data.() of element with ${nodeId}: `, ele.data());
   };
 
-  //function that is responsible for deleting a certain interest and its related nodes
+  //function that is responsible for deleting a certain interest and its related nodes (delete function)
   const deleteInterest = async (element) => {
     const cy = getCytoscapeInstance();
     //console.log("cytoscape instance", cy);
@@ -382,7 +383,7 @@ const NodeLink = (props) => {
 
   //const [state, setState]=useState(getElements(data))
 
-  //Mateusz: when NodeLink.colors are changed (check box in color button), then graph should be rendered with new colors
+  //useEffect - when NodeLink.colors are changed (check box in color button), then graph should be rendered with new colors (color button)
   useEffect(() => {
     colorPalette = NodeLink.colors;
     const elementsCurr = getElements(data);
@@ -391,8 +392,6 @@ const NodeLink = (props) => {
     setElements([]);
     setElements(elementsCurr[0]);
   }, [data, NodeLink.colors]);
-
-  //const elements = getElements(data);
 
   const layoutGraph = {
     name: "concentric",
@@ -472,10 +471,10 @@ const NodeLink = (props) => {
     }   
   ];
 
-  const [modalOpen, setModalOpen] = useState(false);
+  //states needed to manage manual adding of nodes (manual adding of interests)
+  const [modalOpen, setModalOpen] = useState(false); 
   const [keyword, setKeyword] = useState('');
   const [articles, setArticles] = useState([]);
-  //const [selectedArticles, setSelectedArticles] = useState([]);
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [isExpandDialogOpen, setExpandDialogOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -502,6 +501,7 @@ const NodeLink = (props) => {
     setKeyword(event.target.value);
   };
 
+  //display Wikipedia articles based on user's keyword (manual adding of interests)
   const handleSearchArticles = () => {
     if (keyword.trim() === '') {
       toast.error('Your input field is empty', {
@@ -510,7 +510,7 @@ const NodeLink = (props) => {
         className: 'custom-toast-error',
         autoClose: 3000, // 3 seconds
       });
-      return; // Stop further execution
+      return; //stop further execution
     } else {
       const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
 
@@ -520,12 +520,13 @@ const NodeLink = (props) => {
     }
   };
 
-  // Mateusz: function to open the Wikipedia page in a new tab ("Read more" option in manual added nodes)
+  //function to open the Wikipedia page in a new tab - "Read more" option (manual adding of interests)
   const handlePreviewArticle = (event, article) => {
     event.stopPropagation();
     window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
+  //
   window.handleResponse = (data) => {
     const fetchedArticles = data.query.search.map((article) => ({
       title: article.title,
@@ -534,6 +535,7 @@ const NodeLink = (props) => {
     setArticles(fetchedArticles);
   };
 
+  //add an interest from a list to the graph (manual adding of interests)
   const handleSelectArticle = (article) => {
 
     const isDuplicate = elements.some(
@@ -550,12 +552,9 @@ const NodeLink = (props) => {
       });
       return;
     } else {
-      /* const newSelectedArticles = [...selectedArticles, article];
-      setSelectedArticles(newSelectedArticles);
-      console.log("selected articles: ", selectedArticles); */
   
-      //Mateusz: id for manual added nodes is determined by the length of related articles
-      // after removing manual added node, related articles are also removed
+      //id for manual added nodes is determined by the length of related articles
+      //after removing manual added node, related articles are also removed
       const newNodeId = -2 - (relatedArticles.length/6); 
       
       const newNode = {
@@ -587,7 +586,7 @@ const NodeLink = (props) => {
 
       elements.push(newNode, newEdge);
 
-      // Fetch related articles
+      //fetch 3 related articles
       const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
 
       const script = document.createElement('script');
@@ -610,66 +609,64 @@ const NodeLink = (props) => {
     return sortedLinks;
   }; */
 
-  /* useEffect(() => { */
-    window.handleRelatedResponse = (data) => {
-      const pageId = Object.keys(data.query.pages)[0];
-      const currentLength = relatedArticles.length;
+  window.handleRelatedResponse = (data) => {
+    const pageId = Object.keys(data.query.pages)[0];
+    const currentLength = relatedArticles.length;
 
-      const links = data.query.pages[pageId].links;
-      //console.log("All links", links);
+    const links = data.query.pages[pageId].links;
+    //console.log("All links", links);
 
-      // Filter and sort the links based on occurrence count
-      /* const sortedLinks = sortLinks(links); */
+    // Filter and sort the links based on occurrence count
+    /* const sortedLinks = sortLinks(links); */
 
-      // Get the top 3 links
-      /* const topThreeLinks = sortedLinks.slice(0, 3); */
-      //console.log("These are the top three links", topThreeLinks);
-      
-      // Process the top 3 links
-      //need renaming targetId, sourceid, data.target => data.source
-      const newRelatedArticles = links.map((link, index) => {
-        const sourceId = -2 - (currentLength / 6);
-        const targetId = 250 + index + currentLength;
-        const newNode = {
-          data: {
-            id: targetId,
-            source: sourceId,
-            label: link.title,
-            level: 2,
-            color: "#808080",
-            pageData: "",
-            url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(" ", "_")}`,
-          },
-          classes: ["level2", "collapsed"],
-          style: {
-            width: 185,
-            height: 185,
-            shape: "octagon",
-            opacity: "0.8",
-          },
-        };
+    // Get the top 3 links
+    /* const topThreeLinks = sortedLinks.slice(0, 3); */
+    //console.log("These are the top three links", topThreeLinks);
+    
+    // Process the top 3 links
+    //need renaming targetId, sourceid, data.target => data.source
+    const newRelatedArticles = links.map((link, index) => {
+      const sourceId = -2 - (currentLength / 6);
+      const targetId = 250 + index + currentLength;
+      const newNode = {
+        data: {
+          id: targetId,
+          source: sourceId,
+          label: link.title,
+          level: 2,
+          color: "#808080",
+          pageData: "",
+          url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(" ", "_")}`,
+        },
+        classes: ["level2", "collapsed"],
+        style: {
+          width: 185,
+          height: 185,
+          shape: "octagon",
+          opacity: "0.8",
+        },
+      };
 
-        const newEdge = {
-          data: {
-            source: sourceId,
-            target: targetId,
-            color: "#808080",
-          },
-          classes: ["level2"],
-        };
-        elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
+      const newEdge = {
+        data: {
+          source: sourceId,
+          target: targetId,
+          color: "#808080",
+        },
+        classes: ["level2"],
+      };
+      elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
 
-        return [newNode, newEdge]; // Return an array of node and edge objects
-      });
+      return [newNode, newEdge]; // Return an array of node and edge objects
+    });
 
-      setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
-      /* elements.push(...relatedArticles); */
+    setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
+    /* elements.push(...relatedArticles); */
 
-      //console.log("related articles", relatedArticles);
-    };
-  /* }, [relatedArticles]); */
+    //console.log("related articles", relatedArticles);
+  };
 
-  //workaround so that the diagram with manual added nodes are rendered in the graph (pop-up window needed)
+  //workaround with pop-up window, so that manual added nodes are rendered in the graph (manual adding of interests)
   useEffect(() => {
     let timeoutId;
     if (isExpandDialogOpen) {
@@ -690,7 +687,7 @@ const NodeLink = (props) => {
         stylesheet={stylesheet}
         elements={elements}
         cy={(cy) => {
-          //Mateusz: store the cytoscape instance in the ref (needed for deleting function)
+          //store the cytoscape instance in the ref (delete function)
           cyRef.current = cy;
 
           cy.elements().remove();
@@ -698,7 +695,7 @@ const NodeLink = (props) => {
           cy.layout(layoutGraph);
           cy.layout(layoutGraph).run();
 
-          //Pia: after hovering over nodes, the default cursor changes to pointer (hand icon)
+          //after hovering over nodes, the default cursor changes to pointer (hand icon)
           cy.fit();
           cy.on('mouseover','node', (event) => {  
             if(event.cy.container('node')) {
@@ -1228,23 +1225,30 @@ const NodeLink = (props) => {
             atMouse: false, // draw menu at mouse position
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           }
-          let menu4 = cy.cxtmenu(defaultsLevel4); //Pia: 
+
+          let menu4 = cy.cxtmenu(defaultsLevel4);
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
           let menu0 = cy.cxtmenu(defaultsLevel0);
 
-          /*
-        cy.on("tap", "node", function (evt) {
-          let node = evt.target;
-          let succ = node.successors().targets();
-         succ.map((s)=>{
-            s.removeClass("collapsed")
-         })
-
-        })*/
         }}
       />
+      <Dialog open={openDialog.openLearn} onClose={handleCloseLearn}>
+        {openDialog.nodeObj != null ? (
+          <DialogTitle>Learn More about {openDialog.nodeObj.label}</DialogTitle>
+        ) : (
+          <DialogTitle>Learn more</DialogTitle>
+        )}
+        <DialogContent>
+          {""}
+          <WikiDesc data={openDialog.nodeObj}/>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseLearn}>Close</Button>
+        </DialogActions>
+      </Dialog>
+      <ToastContainer/>
       <Dialog open={modalOpen} onClose={handleCloseModal}>
         <DialogTitle>Please enter an interest that you would like to add:</DialogTitle>
         <DialogContent>
