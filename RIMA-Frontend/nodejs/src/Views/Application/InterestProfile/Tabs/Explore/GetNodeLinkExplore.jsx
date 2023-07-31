@@ -512,7 +512,7 @@ const NodeLink = (props) => {
       });
       return; //stop further execution
     } else {
-      const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleResponse`;
+      const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleArticlesSearch`;
 
       const script = document.createElement('script');
       script.src = url;
@@ -526,8 +526,8 @@ const NodeLink = (props) => {
     window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
-  //
-  window.handleResponse = (data) => {
+  //function to handle articles displayed after user enters the keyword (manual adding of  interests)
+  window.handleArticlesSearch = (data) => {
     const fetchedArticles = data.query.search.map((article) => ({
       title: article.title,
       link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
@@ -535,9 +535,10 @@ const NodeLink = (props) => {
     setArticles(fetchedArticles);
   };
 
-  //add an interest from a list to the graph (manual adding of interests)
+  //function responsible for adding an interest from a list to the graph (manual adding of interests)
   const handleSelectArticle = (article) => {
 
+    //prevent form adding interests that are already contained in the graph
     const isDuplicate = elements.some(
       (element) => element.data.label === article.title 
     );
@@ -553,7 +554,8 @@ const NodeLink = (props) => {
       return;
     } else {
   
-      //id for manual added nodes is determined by the length of related articles
+      //id for manual added nodes is determined by the length of related articles (values: -2, -3, -4...)
+      //there are always 3 related articles (6 cytoscape components) => therefore divided by 6
       //after removing manual added node, related articles are also removed
       const newNodeId = -2 - (relatedArticles.length/6); 
       
@@ -587,7 +589,7 @@ const NodeLink = (props) => {
       elements.push(newNode, newEdge);
 
       //fetch 3 related articles
-      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedResponse`;
+      const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedArticles`;
 
       const script = document.createElement('script');
       script.src = relatedUrl;
@@ -609,7 +611,8 @@ const NodeLink = (props) => {
     return sortedLinks;
   }; */
 
-  window.handleRelatedResponse = (data) => {
+  //handle interests that are related to manual added interest - create cytoscape elements with level 2 (manual adding of interests)
+  window.handleRelatedArticles = (data) => {
     const pageId = Object.keys(data.query.pages)[0];
     const currentLength = relatedArticles.length;
 
@@ -661,7 +664,6 @@ const NodeLink = (props) => {
     });
 
     setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
-    /* elements.push(...relatedArticles); */
 
     //console.log("related articles", relatedArticles);
   };
@@ -672,7 +674,7 @@ const NodeLink = (props) => {
     if (isExpandDialogOpen) {
       timeoutId = setTimeout(() => {
         handleExpandDialogClose();
-      }, 0.001); // Set the timeout duration in milliseconds (3 seconds in this case)
+      }, 0.001); //timeout very small
     }
     return () => {
       clearTimeout(timeoutId);
@@ -682,7 +684,7 @@ const NodeLink = (props) => {
   return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}} //creating space for nodes (rectangle)
+        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}}
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
@@ -746,15 +748,15 @@ const NodeLink = (props) => {
             commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
               const id = ele.data("id");
 
+              //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes with related interests of manual added interests (ids that are bigger than 250)
+              //nodes with id < -1 are not contained (manual added nodes)
+              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
               if (id < 250) {
                 return [
                   {
-                    content: "Learn more",
-                    // html/text content to be displayed in the menu
+                    content: "Learn more", // html/text content to be displayed in the menu
                     contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                    select: function (ele) {
-                      // a function to execute when the command is selected
-
+                    select: function (ele) { // a function to execute when the command is selected
                       handleOpenLearn(ele); // `ele` holds the reference to the active element
                     },
                     enabled: true // whether the command is selectable
@@ -766,6 +768,7 @@ const NodeLink = (props) => {
                       let succ = ele.successors().targets();
                       let edges = ele.successors();
     
+                      //animation for edges after clicking on 'Expand' (indication after deleting/expanding)
                       edges.style("opacity", 0)
                       .style("background-color", "background-color")
                       .animate({
@@ -778,13 +781,14 @@ const NodeLink = (props) => {
                         }
                       });
                 
+                      //animation for nodes after clicking on 'Expand' (indication after deleting/expanding)
                       succ.style("opacity", 0)
                         .style("background-color", "background-color")
                         .style("width", 0)
                         .style("height", 0)
                         .animate({
                           style: { opacity: 1, width: 200, height: 200 },
-                          duration: 750, // Adjust the duration value to control the speed (in milliseconds)
+                          duration: 750,
                           easing: "ease-in-sine",
                           queue: false,
                           complete: function () {
@@ -792,8 +796,6 @@ const NodeLink = (props) => {
                           }
                         });
     
-                        
-                  
                     let ids = [];
                     edges.map((e) => {
                       e.removeClass("collapsed");
@@ -804,15 +806,10 @@ const NodeLink = (props) => {
                       );
                       console.log(ids, "test");
                     });
-    
-                    /*succ.map((s) => {
-                      s.removeClass("collapsed");
-                    });*/
+
                     cy.fit([ele, succ, edges], 16);
                   },
-                  enabled: true
-      
-                      // whether the command is selectable
+                  enabled: true // whether the command is selectable
                   },
                   { 
                     content: "Delete",
@@ -842,6 +839,7 @@ const NodeLink = (props) => {
                   }
                 ];
                } else {
+                //options that are displayed after clicking on the nodes that represent the related interests of manual added nodes - id > 250 (manual adding of nodes)
                 return [
                   {
                     content: "Read more",
@@ -886,8 +884,10 @@ const NodeLink = (props) => {
             commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
               const id = ele.data("id");
 
-              if (id >= -1) {
-                // For nodes with id >= -1
+              //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes that were manually added (ids that are smaller than -1)
+              //nodes with id > 250 are not contained (related interests for manual added nodes)
+              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
+              if (id > -1) {
                 return [
                   {
                     // example command
@@ -929,76 +929,50 @@ const NodeLink = (props) => {
                     },
                     enabled: false // whether the command is selectable
                   },
-                  /* {
-                    content: "test ele.data()",
-                    contentStyle: {},
-                    select: function (ele) {
-                      const data = ele.data();
-                      console.log(data);
-                    },
-                    enabled: true,
-                  } */
                 ];
                } else {
-                // For nodes with id < -1
+                //options that are displayed after clicking on the nodes that were manually added - with id < -1 (manual adding of nodes)
                 return [
-                  /* {
-                    content: "Learn more",
-                    select: function (ele) {},
-                    enabled: false,
-                  }, */
-              {
-                content: "Expand",
-                contentStyle: {},
-                select: function (ele) {
+                  {
+                    content: "Expand",
+                    contentStyle: {},
+                    select: function (ele) {
+                      /* if (relatedArticles.length === 6) {
+                        elements.push(...relatedArticles); 
+                        relatedArticles.push({classes: ["level2", "collapsed"]}); //unbedingt verbessern!
+                        //console.log("Related articles for first manual added.");
+                        //console.log(relatedArticles);
+                      } */
+                      const sourceId = parseInt(ele.data("id"));
 
-                  /* if (relatedArticles.length === 6) {
-                    elements.push(...relatedArticles); 
-                    relatedArticles.push({classes: ["level2", "collapsed"]}); //unbedingt verbessern!
-                    //console.log("Related articles for first manual added.");
-                    //console.log(relatedArticles);
-                  } */
-                  const sourceId = parseInt(ele.data("id"));
-
-                  elements.forEach(element => {
-                    if (element.data.source === sourceId) {
-                      // Remove "collapsed" class from the element
-                      element.classes = element.classes.filter(cls => cls !== "collapsed");
-                    }
-                  });
-                  //console.log("Elements after expanding:", elements);
-                  cy.json(elements); //function that possibly reload the graph with new data without refreshing the page
-                  handleExpandClick(ele);
-              },
-              enabled: true
-  
-                  // whether the command is selectable
-              },
-              {
-                content: "Read more",
-                select: function(ele) {
-                  const url = ele.data('url');
-                  window.open(url, '_blank');
-                },
-                enabled: true
-              },
-              {
-                content: "Delete",
-                contentStyle: {},
-                select: function (ele) {
-                  handleOpenDelete(ele);
-                },
-                enabled: true
-              }
-                /* {
-                  content: "test ele.data()",
-                  contentStyle: {},
-                  select: function (ele) {
-                    const data = ele.data();
-                    console.log(data);
+                      elements.forEach(element => {
+                        if (element.data.source === sourceId) {
+                          //remove "collapsed" class from the element
+                          element.classes = element.classes.filter(cls => cls !== "collapsed");
+                        }
+                      });
+                      //console.log("Elements after expanding:", elements);
+                      cy.json(elements);
+                      handleExpandClick(ele);
                   },
-                  enabled: true,
-                } */
+                  enabled: true // whether the command is selectable
+                  },
+                  {
+                    content: "Read more",
+                    select: function(ele) {
+                      const url = ele.data('url');
+                      window.open(url, '_blank');
+                    },
+                    enabled: true
+                  },
+                  {
+                    content: "Delete",
+                    contentStyle: {},
+                    select: function (ele) {
+                      handleOpenDelete(ele);
+                    },
+                    enabled: true
+                  }
                 ];
               }
             },
@@ -1025,7 +999,6 @@ const NodeLink = (props) => {
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
             commands: [
               // an array of commands to list in the menu or a function that returns the array
-
               {
                 // example command
                 // optional: custom background color for item
@@ -1039,7 +1012,6 @@ const NodeLink = (props) => {
               },
               {
                 // example command
-
                 content: "Expand", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
                 select: function (ele) {
@@ -1072,7 +1044,7 @@ const NodeLink = (props) => {
                     .style("height", 0)
                     .animate({
                       style: { opacity: 1, width: 200, height: 200 },
-                      duration: 750, // Adjust the duration value to control the speed (in milliseconds)
+                      duration: 750,
                       easing: "ease-in-sine",
                       queue: false,
                       complete: function () {
@@ -1096,9 +1068,7 @@ const NodeLink = (props) => {
                   })
                   cy.fit([ele, succ, edges], 16);
                 },
-                enabled: true
-
-                // whether the command is selectable
+                enabled: true // whether the command is selectable
               },
               {
                 content: "Delete",
