@@ -191,7 +191,7 @@ const NodeLink = (props) => {
  
 
   const handleOpenLearn = (ele) => {
-    const data = ele.data(); //parameter that is passed to deleteInterests function (delete function)
+    const data = ele.data(); //parameter that is passed to deleteInterests function (delete button)
     setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
   };
   const handleCloseLearn = () => {
@@ -211,22 +211,22 @@ const NodeLink = (props) => {
     setDeleteOpen({...deleteOpen, openDelete: false});
   };
 
-  //create a ref to store the cytoscape instance (delete function: needed for deleting related interests when a certain interest is deleted)
+  //create a ref to store the cytoscape instance (delete button: needed for deleting related interests when a certain interest is deleted)
   const cyRef = useRef(null);
 
-  //function to get the cytoscape instance (delete function)
+  //function to get the cytoscape instance (delete button)
   const getCytoscapeInstance = () => {
     return cyRef.current;
   };
 
-  //function to find a node within CytoscapeComponent with a specific id that returns ele.data() (delete function: needed for deleteInterest)
+  //function to find a node within CytoscapeComponent with a specific id that returns ele.data() (delete button: needed for deleteInterest)
   const findNode = (cy, nodeId) => {
     const ele = cy.nodes().filter((node) => node._private.data.id === nodeId);
     return ele.data();
     //console.log(`data.() of element with ${nodeId}: `, ele.data());
   };
 
-  //function that is responsible for deleting a certain interest and its related nodes (delete function)
+  //function that is responsible for deleting a certain interest and its related nodes (delete button)
   const deleteInterest = async (element) => {
     const cy = getCytoscapeInstance();
     //console.log("cytoscape instance", cy);
@@ -402,6 +402,7 @@ const NodeLink = (props) => {
       return 1;
     }
   };
+
   const stylesheet = [
     {
       selector: "node",
@@ -526,7 +527,7 @@ const NodeLink = (props) => {
     window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
   };
 
-  //function to handle articles displayed after user enters the keyword (manual adding of  interests)
+  //function to handle articles displayed after user enters the keyword (manual adding of interests)
   window.handleArticlesSearch = (data) => {
     const fetchedArticles = data.query.search.map((article) => ({
       title: article.title,
@@ -598,36 +599,12 @@ const NodeLink = (props) => {
     }
   };
 
-  /* const sortLinks = (links) => {
-    // Count the occurrences of each link
-    const occurrenceCounts = links.reduce((counts, link) => {
-      counts[link.title] = (counts[link.title] || 0) + 1;
-      return counts;
-    }, {});
-  
-    // Sort the links based on occurrence count in descending order
-    const sortedLinks = links.sort((a, b) => occurrenceCounts[b.title] - occurrenceCounts[a.title]);
-  
-    return sortedLinks;
-  }; */
-
   //handle interests that are related to manual added interest - create cytoscape elements with level 2 (manual adding of interests)
   window.handleRelatedArticles = (data) => {
     const pageId = Object.keys(data.query.pages)[0];
     const currentLength = relatedArticles.length;
-
     const links = data.query.pages[pageId].links;
-    //console.log("All links", links);
 
-    // Filter and sort the links based on occurrence count
-    /* const sortedLinks = sortLinks(links); */
-
-    // Get the top 3 links
-    /* const topThreeLinks = sortedLinks.slice(0, 3); */
-    //console.log("These are the top three links", topThreeLinks);
-    
-    // Process the top 3 links
-    //need renaming targetId, sourceid, data.target => data.source
     const newRelatedArticles = links.map((link, index) => {
       const sourceId = -2 - (currentLength / 6);
       const targetId = 250 + index + currentLength;
@@ -658,9 +635,9 @@ const NodeLink = (props) => {
         },
         classes: ["level2"],
       };
-      elements.push(newNode, newEdge); // Add newNode and newEdge to the elements array
+      elements.push(newNode, newEdge);
 
-      return [newNode, newEdge]; // Return an array of node and edge objects
+      return [newNode, newEdge];
     });
 
     setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
@@ -668,7 +645,7 @@ const NodeLink = (props) => {
     //console.log("related articles", relatedArticles);
   };
 
-  //workaround with pop-up window, so that manual added nodes are rendered in the graph (manual adding of interests)
+  //workaround with pop-up window, so that related interests of manual added nodes are rendered in the graph (manual adding of interests)
   useEffect(() => {
     let timeoutId;
     if (isExpandDialogOpen) {
@@ -684,13 +661,13 @@ const NodeLink = (props) => {
   return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.3}}
+        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.25}} //font size - adjust size of strings from the menu that is displayed after clicking on nodes (adjust capitalization)
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
         cy={(cy) => {
-          //store the cytoscape instance in the ref (delete function)
-          cyRef.current = cy;
+
+          cyRef.current = cy; //store the cytoscape instance in the ref (delete button)
 
           cy.elements().remove();
           cy.add(elements);
@@ -750,6 +727,7 @@ const NodeLink = (props) => {
 
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes with related interests of manual added interests (ids that are bigger than 250)
               //nodes with id < -1 are not contained (manual added nodes)
+
               //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
               if (id < 250) {
                 return [
@@ -839,6 +817,7 @@ const NodeLink = (props) => {
                   }
                 ];
                } else {
+
                 //options that are displayed after clicking on the nodes that represent the related interests of manual added nodes - id > 250 (manual adding of nodes)
                 return [
                   {
@@ -886,6 +865,7 @@ const NodeLink = (props) => {
 
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes that were manually added (ids that are smaller than -1)
               //nodes with id > 250 are not contained (related interests for manual added nodes)
+
               //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
               if (id > -1) {
                 return [
@@ -931,6 +911,7 @@ const NodeLink = (props) => {
                   },
                 ];
                } else {
+
                 //options that are displayed after clicking on the nodes that were manually added - with id < -1 (manual adding of nodes)
                 return [
                   {
@@ -1025,7 +1006,8 @@ const NodeLink = (props) => {
                   //}); // `ele` holds the reference to the active element
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
-                  
+
+                  //animation for edges after clicking on 'Expand' (indication after deleting/expanding)
                   edges.style("opacity", 0)
                   .style("background-color", "background-color")
                   .animate({
@@ -1038,6 +1020,7 @@ const NodeLink = (props) => {
                     }
                   });
             
+                  //animation for nodes after clicking on 'Expand' (indication after deleting/expanding)
                   succ.style("opacity", 0)
                     .style("background-color", "background-color")
                     .style("width", 0)
@@ -1113,6 +1096,7 @@ const NodeLink = (props) => {
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
+          //commands for second expandable layer (generate new layer of interests)
           let defaultsLevel4 = {
             selector: "node[level=4]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
@@ -1196,7 +1180,7 @@ const NodeLink = (props) => {
             outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           }
 
-          let menu4 = cy.cxtmenu(defaultsLevel4);
+          let menu4 = cy.cxtmenu(defaultsLevel4); //set commands for second expandable layer (generate new layer of interests)
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
@@ -1219,6 +1203,8 @@ const NodeLink = (props) => {
         </DialogActions>
       </Dialog>
       <ToastContainer/>
+
+      {/* modal (manual adding of interests) */}
       <Dialog open={modalOpen} onClose={handleCloseModal}>
         <DialogTitle>Please enter an interest that you would like to add:</DialogTitle>
         <DialogContent>
@@ -1261,10 +1247,12 @@ const NodeLink = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={isExpandDialogOpen} onClose={handleExpandDialogClose} style={{ visibility: 'hidden' }}>
+
+      {/* workaround with pop-up window, so that related interests of manual added nodes are rendered in the graph (manual adding of interests) */}
+      <Dialog open={isExpandDialogOpen} onClose={handleExpandDialogClose} style={{ visibility: 'hidden' }}> {/* it is never displayed */}
         <DialogTitle>Expand</DialogTitle>
         <DialogContent>
-          {/* Content of the dialog */}
+          {/* content of the dialog */}
           {selectedNode && (
             <div>
               <p>Pop-up window content for node {selectedNode.id()} goes here.</p>
@@ -1278,6 +1266,8 @@ const NodeLink = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* delete confirmation modal (delete button) */}
       <Dialog open={deleteOpen.openDelete} onClose={handleCloseDelete}>
         {deleteOpen.nodeObj !== null ? (
         <DialogTitle>Are you sure you want to delete the interest: {deleteOpen.nodeObj.label} ?</DialogTitle> 
@@ -1296,6 +1286,7 @@ const NodeLink = (props) => {
           </Button>
           </DialogActions>
       </Dialog>
+
     </>
   );
 };

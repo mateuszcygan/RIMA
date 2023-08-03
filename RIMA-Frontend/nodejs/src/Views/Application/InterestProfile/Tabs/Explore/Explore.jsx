@@ -51,7 +51,6 @@ const Explore = (props) => {
     setKeywords(dataArray);
     console.log(curInterests, "test fetch")
     return curInterests
-
   };
 
 
@@ -208,6 +207,8 @@ const Explore = (props) => {
     setState({...state, checked: checkedNew, graphData: newNodeData});
   };
 
+  //color palette (color button)
+
   const defaultSet = [
     "#397367",
     "#160C28",
@@ -229,6 +230,7 @@ const Explore = (props) => {
     "#98B9F2"
   ];
   
+  //deep ocean
   const colSet2 = [
     "#1e81b0",
     "#e28743",
@@ -250,6 +252,7 @@ const Explore = (props) => {
     "#fdb872"
   ];
 
+  //spring meadow
   const colSet3 = [
     "#e6194B",
     "#f58231",
@@ -271,6 +274,7 @@ const Explore = (props) => {
     "#CDDC39"
 ];
 
+  //accessible colors
   const colSet4 = [
     "#11DC11",
     "#E61313",
@@ -292,8 +296,8 @@ const Explore = (props) => {
     "#0085FF"
   ];
 
+  //states needed to manage colors of nodes and check box responsible for choosing 
   const [nodeColors, setNodeColors] = useState(defaultSet);
-
   const [selectedColorBox, setSelectedColorBox] = useState(1);
 
   const [stateColor, setStateColor] = useState({
@@ -301,8 +305,8 @@ const Explore = (props) => {
     checked: 1,
   });
 
+  //logic to handle color change based on the selected checkbox (color button)
   const handleColorChange = (index) => {
-    // Logic to handle color change based on the selected checkbox
     if (index === 1) {
       setNodeColors(defaultSet);
     } else if (index === 2) {
@@ -336,6 +340,7 @@ const Explore = (props) => {
     console.log(stateColor);
   };
 
+  //useEffect - when nodeColors are changed (check box in color button), then graph should be rendered with new colors (color button)
   useEffect(() => {
     NodeLink.colors = nodeColors;
     // console.log(nodeColors);
@@ -370,6 +375,8 @@ const Explore = (props) => {
             );
           }) : <></>}
         </Menu>:<></>}
+
+        {/* (color button) */}
         <Button 
           startIcon={<PaletteIcon/>} 
           color="primary" 
@@ -378,6 +385,7 @@ const Explore = (props) => {
         >
           Change colors of nodes
         </Button>
+
         {stateColor.openColorsMenu && (
       <Menu
       id="nodeColorsMenu"
