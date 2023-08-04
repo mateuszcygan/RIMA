@@ -1,17 +1,28 @@
 import CytoscapeComponent from "react-cytoscapejs";
 import cytoscape from "cytoscape";
-import React, {useEffect, useState, useRef} from "react"
+import React, { useEffect, useState, useRef } from "react";
 //import './cytoscape.css';
 
-import { Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, TextField, Button, DialogActions, SvgIcon } from '@material-ui/core';
-import { OpenInNew } from '@material-ui/icons';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Button,
+  DialogActions,
+  SvgIcon,
+} from "@material-ui/core";
+import { OpenInNew } from "@material-ui/icons";
 //import data from "./data";
 import cxtmenu from "cytoscape-cxtmenu";
 import WikiDesc from "../Connect/WikiDesc";
-import {toast, ToastContainer} from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import RestAPI from "../../../../../Services/api";
-import WikipediaLogo from "./Wikipedia-logo.png"
+import WikipediaLogo from "./Wikipedia-logo.png";
 
 cytoscape.use(cxtmenu);
 
@@ -34,12 +45,11 @@ let colorPalette = [
   "#FCAB64",
   "#EDCB96",
   "#231942",
-  "#98B9F2"
+  "#98B9F2",
 ];
 
 //additional function parameter for colors (color button)
 function getColor(currColors, colors) {
-
   const allColors = colors;
   let pickedColor = "";
   if (allColors.length === currColors.length) {
@@ -57,9 +67,9 @@ function getColor(currColors, colors) {
 function getElements(data) {
   let ids = [...Array(200).keys()];
   let elements = [
-    {data: {id: -1, label: "My Interests", level: 0, color: "black"}}
+    { data: { id: -1, label: "My Interests", level: 0, color: "black" } },
   ];
-  
+
   let currColors = [];
   let uniqueTitles = [];
 
@@ -82,103 +92,112 @@ function getElements(data) {
             level: 1,
             color: color,
             pageData: d.summary,
-            url: d.url
+            url: d.url,
           },
-          classes: ["level1"]
+          classes: ["level1"],
         };
         let edge = {
           data: { source: -1, target: idLevel1, color: color },
-          classes: ["level1"]
+          classes: ["level1"],
         };
         elements.push(element, edge);
 
-      explore.map((e) => {
-        label = e.title;
-        //check if the related topic title is already added (get rid of doublings)
-        if (!uniqueTitles.includes(label)) {
-          uniqueTitles.push(label);
-          let idLevel2 = ids.pop();
-          element = {
-            data: {
-              id: idLevel2,
-              label: label,
-              level: 2,
-              color: color,
-              pageData: e.summary,
-              url: e.wikiURL
-            },
-            classes: ["level2"]
-          };
-          edge = {
-            data: { target: idLevel2, source: idLevel1, color: color },
-            classes: ["level2"]
-          };
-
-          elements.push(element, edge);
-
-        let relatedTopics = e.relatedTopics;
-
-        relatedTopics.map((r) => {
-          let idLevel3 = ids.pop();
-          label = r.title;
-
-        //check if the related topic title is already added (get rid of doublings)
-        if (!uniqueTitles.includes(label)) {
-          uniqueTitles.push(label);
-          element = {
-            data: {
-              id: idLevel3,
-              label: label,
-              level: 3,
-              color: color,
-              pageData: r.summary,
-              url: r.wikiURL
-            },
-            classes: ["collapsed", "level3"]
-          };
-          edge = {
-            data: { target: idLevel3, source: idLevel2, color: color },
-            classes: ["collapsed", "level3"]
-          };
-          elements.push(element, edge);
-
-          let currRelatedTopics = r.currRelatedTopics;
-
-          currRelatedTopics.map((c) => {
-            let idLevel4 = ids.pop();
-            label = c.title;
+        explore.map((e) => {
+          label = e.title;
+          //check if the related topic title is already added (get rid of doublings)
+          if (!uniqueTitles.includes(label)) {
+            uniqueTitles.push(label);
+            let idLevel2 = ids.pop();
             element = {
               data: {
-                id: idLevel4,
+                id: idLevel2,
                 label: label,
-                level: 4,
+                level: 2,
                 color: color,
-                pageData: c.summary,
-                url: c.wikiURL
+                pageData: e.summary,
+                url: e.wikiURL,
               },
-              classes: ["collapsed1", "level4"]
+              classes: ["level2"],
             };
             edge = {
-              data: {target: idLevel4, source: idLevel3, color: color},
-              classes: ["collapsed1", "level4"]
-            }; 
+              data: { target: idLevel2, source: idLevel1, color: color },
+              classes: ["level2"],
+            };
+
             elements.push(element, edge);
-          });
-        }});
-      }});
-    }})
-  } catch{
+
+            let relatedTopics = e.relatedTopics;
+
+            relatedTopics.map((r) => {
+              let idLevel3 = ids.pop();
+              label = r.title;
+
+              //check if the related topic title is already added (get rid of doublings)
+              if (!uniqueTitles.includes(label)) {
+                uniqueTitles.push(label);
+                element = {
+                  data: {
+                    id: idLevel3,
+                    label: label,
+                    level: 3,
+                    color: color,
+                    pageData: r.summary,
+                    url: r.wikiURL,
+                  },
+                  classes: ["collapsed", "level3"],
+                };
+                edge = {
+                  data: { target: idLevel3, source: idLevel2, color: color },
+                  classes: ["collapsed", "level3"],
+                };
+                elements.push(element, edge);
+
+                let currRelatedTopics = r.currRelatedTopics;
+
+                currRelatedTopics.map((c) => {
+                  let idLevel4 = ids.pop();
+                  label = c.title;
+                  element = {
+                    data: {
+                      id: idLevel4,
+                      label: label,
+                      level: 4,
+                      color: color,
+                      pageData: c.summary,
+                      url: c.wikiURL,
+                    },
+                    classes: ["collapsed1", "level4"],
+                  };
+                  edge = {
+                    data: { target: idLevel4, source: idLevel3, color: color },
+                    classes: ["collapsed1", "level4"],
+                  };
+                  elements.push(element, edge);
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  } catch {
     elements = [
-      {data: {id: -1, label: "Sorry, an error occurred.", level: 0, color: "red"}}
+      {
+        data: {
+          id: -1,
+          label: "Sorry, an error occurred.",
+          level: 0,
+          color: "red",
+        },
+      },
     ];
-  };
+  }
 
   return [elements, currColors];
-  
 }
 
 const NodeLink = (props) => {
-  const {data, keywords, setKeywords, colors} = props;
+  const { data, keywords, setKeywords, colors } = props;
   const [elements, setElements] = useState([]);
   const [openDialog, setOpenDialog] = useState({
     openLearn: null,
@@ -186,16 +205,15 @@ const NodeLink = (props) => {
   });
   const [deleteOpen, setDeleteOpen] = useState({
     openDelete: null,
-    nodeObj: null
+    nodeObj: null,
   });
- 
 
   const handleOpenLearn = (ele) => {
     const data = ele.data(); //parameter that is passed to deleteInterests function (delete button)
-    setOpenDialog({...openDialog, openLearn: true, nodeObj: data});
+    setOpenDialog({ ...openDialog, openLearn: true, nodeObj: data });
   };
   const handleCloseLearn = () => {
-    setOpenDialog({...openDialog, openLearn: false});
+    setOpenDialog({ ...openDialog, openLearn: false });
   };
 
   const validateInterest = (interests, interest) => {
@@ -203,12 +221,12 @@ const NodeLink = (props) => {
   };
 
   const handleOpenDelete = (ele) => {
-    const data = ele.data()
-    setDeleteOpen({...deleteOpen, openDelete: true, nodeObj: data});
+    const data = ele.data();
+    setDeleteOpen({ ...deleteOpen, openDelete: true, nodeObj: data });
   };
 
   const handleCloseDelete = () => {
-    setDeleteOpen({...deleteOpen, openDelete: false});
+    setDeleteOpen({ ...deleteOpen, openDelete: false });
   };
 
   //create a ref to store the cytoscape instance (delete button: needed for deleting related interests when a certain interest is deleted)
@@ -240,8 +258,8 @@ const NodeLink = (props) => {
       (element) => element.data.id === elementId
     );
     //console.log("index of an element that should be deleted: ", elementIndex);
-  
-    //remove the element 
+
+    //remove the element
     elements.splice(elementIndex, 1);
 
     //find an edge that connects the deleted interest with the rest of the diagram (edge to be deleted is 'target' there)
@@ -264,13 +282,11 @@ const NodeLink = (props) => {
 
     //delete edges that start at interest that should be deleted at target at related interests
     connectedEdges.forEach((edge) => {
-      const edgeIndex = elements.findIndex(
-        (element) => element === edge
-      );
+      const edgeIndex = elements.findIndex((element) => element === edge);
       elements.splice(edgeIndex, 1);
     });
 
-    //create an array that stores nodes of related interests 
+    //create an array that stores nodes of related interests
     //(needed for recursive call - further interests should also be deleted)
     const relatedInterests = [];
 
@@ -297,26 +313,28 @@ const NodeLink = (props) => {
       const msg = "The delete operation completed successfully.";
       toast.success(msg, {
         toastId: "addLevel2",
-        autoClose: 3000 // Display for 3 seconds
-    });
+        autoClose: 3000, // Display for 3 seconds
+      });
     } catch (err) {
       console.log("Error adding interest:", err);
       toast.error("Failed to remove the interest. Please try again later.", {
         toastId: "addLevel2",
-        autoClose: 3000 // Display for 3 seconds
+        autoClose: 3000, // Display for 3 seconds
       });
     }
-  }
-  
+  };
+
   //ADD FUNKTION WURDE geändert, die alte ist unten
   const addNewInterest = async (currInterest) => {
-    const alreadyExist = keywords.some((interest) => interest.text === currInterest.toLowerCase());
-  
+    const alreadyExist = keywords.some(
+      (interest) => interest.text === currInterest.toLowerCase()
+    );
+
     if (alreadyExist) {
       console.log("Interest already exists in my list!");
       return;
     }
-  
+
     const newInterest = {
       id: Date.now(),
       categories: [],
@@ -325,25 +343,25 @@ const NodeLink = (props) => {
       text: currInterest.toLowerCase(),
       value: 3,
     };
-  
+
     const newKeywords = [...keywords, newInterest];
-  
+
     try {
       await RestAPI.addKeyword(newKeywords);
       newKeywords(newKeywords);
-  
+
       const msg = `The interest "${currInterest}" has been added to your interests.`;
       toast.success(msg, {
-        toastId: "addLevel2"
+        toastId: "addLevel2",
       });
     } catch (error) {
       console.error("Error adding interest:", error);
       toast.error("Failed to add the interest. Please try again later.", {
-        toastId: "addLevel2"
+        toastId: "addLevel2",
       });
     }
   };
-  
+
   /*const addNewInterest = async (currInterest) => {
     let alreadyExist = validateInterest(keywords, currInterest);
 
@@ -400,7 +418,7 @@ const NodeLink = (props) => {
     },
     levelWidth: function () {
       return 1;
-    }
+    },
   };
 
   const stylesheet = [
@@ -411,14 +429,14 @@ const NodeLink = (props) => {
         height: 200,
         label: "data(label)",
         "background-color": "data(color)",
-        color: "white"
-      }
+        color: "white",
+      },
     },
     {
       selector: "edge",
       style: {
-        "curve-style": "straight"
-      }
+        "curve-style": "straight",
+      },
     },
     {
       selector: "node[label]",
@@ -427,54 +445,54 @@ const NodeLink = (props) => {
         "text-valign": "center",
         "text-wrap": "wrap",
         "text-max-width": 20,
-        "font-size": 24
-      }
+        "font-size": 24,
+      },
     },
     {
       selector: ".collapsed",
       style: {
-        display: "none"
-      }
+        display: "none",
+      },
     },
     {
       selector: ".collapsed1",
       style: {
-        display: "none"
-      }
+        display: "none",
+      },
     },
     {
       selector: ".level1",
       style: {
         "line-color": "data(color)",
-        color: "white"
-      }
+        color: "white",
+      },
     },
     {
       selector: ".level2",
       style: {
         "background-opacity": 0.6,
-        "line-color": "data(color)"
-      }
+        "line-color": "data(color)",
+      },
     },
     {
       selector: ".level3",
       style: {
         "background-opacity": 0.4,
-        "line-color": "data(color)"
-      }
+        "line-color": "data(color)",
+      },
     },
     {
       selector: ".level4",
       style: {
         "background-opacity": 0.3,
         "line-color": "data(color)",
-      }
-    }   
+      },
+    },
   ];
 
   //states needed to manage manual adding of nodes (manual adding of interests)
-  const [modalOpen, setModalOpen] = useState(false); 
-  const [keyword, setKeyword] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [keyword, setKeyword] = useState("");
   const [articles, setArticles] = useState([]);
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [isExpandDialogOpen, setExpandDialogOpen] = useState(false);
@@ -504,18 +522,18 @@ const NodeLink = (props) => {
 
   //display Wikipedia articles based on user's keyword (manual adding of interests)
   const handleSearchArticles = () => {
-    if (keyword.trim() === '') {
-      toast.error('Your input field is empty', {
-        toastId: 'emptyInput',
-        containerId: 'toastContainer',
-        className: 'custom-toast-error',
+    if (keyword.trim() === "") {
+      toast.error("Your input field is empty", {
+        toastId: "emptyInput",
+        containerId: "toastContainer",
+        className: "custom-toast-error",
         autoClose: 3000, // 3 seconds
       });
       return; //stop further execution
     } else {
       const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${keyword}&srlimit=3&callback=handleArticlesSearch`;
 
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = url;
       document.head.appendChild(script);
     }
@@ -524,29 +542,35 @@ const NodeLink = (props) => {
   //function to open the Wikipedia page in a new tab - "Read more" option (manual adding of interests)
   const handlePreviewArticle = (event, article) => {
     event.stopPropagation();
-    window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`, '_blank');
+    window.open(
+      `https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`,
+      "_blank"
+    );
   };
 
   //function to handle articles displayed after user enters the keyword (manual adding of interests)
   window.handleArticlesSearch = (data) => {
     const fetchedArticles = data.query.search.map((article) => ({
       title: article.title,
-      link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(' ', '_')}`,
+      link: `https://en.wikipedia.org/wiki/${article.title.replaceAll(
+        " ",
+        "_"
+      )}`,
     }));
     setArticles(fetchedArticles);
   };
 
   //function responsible for adding an interest from a list to the graph (manual adding of interests)
   const handleSelectArticle = (article) => {
-
     //prevent form adding interests that are already contained in the graph
     const isDuplicate = elements.some(
-      (element) => element.data.label === article.title 
+      (element) => element.data.label === article.title
     );
     console.log("isDuplicate", isDuplicate);
-  
+
     if (isDuplicate) {
-      const message = "You have already added " + article.title + " to your interests";
+      const message =
+        "You have already added " + article.title + " to your interests";
       toast.error(message, {
         toastId: "duplicateInterest",
         containerId: "toastContainer",
@@ -554,12 +578,11 @@ const NodeLink = (props) => {
       });
       return;
     } else {
-  
       //id for manual added nodes is determined by the length of related articles (values: -2, -3, -4...)
       //there are always 3 related articles (6 cytoscape components) => therefore divided by 6
       //after removing manual added node, related articles are also removed
-      const newNodeId = -2 - (relatedArticles.length/6); 
-      
+      const newNodeId = -2 - relatedArticles.length / 6;
+
       const newNode = {
         data: {
           id: newNodeId,
@@ -592,10 +615,9 @@ const NodeLink = (props) => {
       //fetch 3 related articles
       const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedArticles`;
 
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = relatedUrl;
       document.head.appendChild(script);
-      
     }
   };
 
@@ -606,7 +628,7 @@ const NodeLink = (props) => {
     const links = data.query.pages[pageId].links;
 
     const newRelatedArticles = links.map((link, index) => {
-      const sourceId = -2 - (currentLength / 6);
+      const sourceId = -2 - currentLength / 6;
       const targetId = 250 + index + currentLength;
       const newNode = {
         data: {
@@ -616,7 +638,10 @@ const NodeLink = (props) => {
           level: 2,
           color: "#808080",
           pageData: "",
-          url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(" ", "_")}`,
+          url: `https://en.wikipedia.org/wiki/${link.title.replaceAll(
+            " ",
+            "_"
+          )}`,
         },
         classes: ["level2", "collapsed"],
         style: {
@@ -640,7 +665,10 @@ const NodeLink = (props) => {
       return [newNode, newEdge];
     });
 
-    setRelatedArticles((prevArticles) => [...prevArticles, ...newRelatedArticles.flat()]);
+    setRelatedArticles((prevArticles) => [
+      ...prevArticles,
+      ...newRelatedArticles.flat(),
+    ]);
 
     //console.log("related articles", relatedArticles);
   };
@@ -661,12 +689,16 @@ const NodeLink = (props) => {
   return (
     <>
       <CytoscapeComponent
-        style={{width: "100%", height: "800px", backgroundColor: "#F8F4F2", fontSize: 11.25}} //font size - adjust size of strings from the menu that is displayed after clicking on nodes (adjust capitalization)
+        style={{
+          width: "100%",
+          height: "800px",
+          backgroundColor: "#F8F4F2",
+          fontSize: 11.25,
+        }} //font size - adjust size of strings from the menu that is displayed after clicking on nodes (adjust capitalization)
         layout={layoutGraph}
         stylesheet={stylesheet}
         elements={elements}
         cy={(cy) => {
-
           cyRef.current = cy; //store the cytoscape instance in the ref (delete button)
 
           cy.elements().remove();
@@ -676,16 +708,16 @@ const NodeLink = (props) => {
 
           //after hovering over nodes, the default cursor changes to pointer (hand icon)
           cy.fit();
-          cy.on('mouseover','node', (event) => {  
-            if(event.cy.container('node')) {
-              event.cy.container('node').style.cursor = 'pointer';
+          cy.on("mouseover", "node", (event) => {
+            if (event.cy.container("node")) {
+              event.cy.container("node").style.cursor = "pointer";
             }
-          })
-          cy.on('mouseout','node', (event) => {
-            if(event.cy.container('node')) {
-              event.cy.container('node').style.cursor = 'default';
+          });
+          cy.on("mouseout", "node", (event) => {
+            if (event.cy.container("node")) {
+              event.cy.container("node").style.cursor = "default";
             }
-          })
+          });
 
           let defaultsLevel0 = {
             selector: "node[level=0]",
@@ -715,14 +747,15 @@ const NodeLink = (props) => {
             itemTextShadowColor: "transparent", // the text shadow colour of the command's content
             zIndex: 9999, // the z-index of the ui div
             atMouse: false, // draw menu at mouse position
-            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+            outsideMenuCancel: 8, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
           let defaultsLevel2 = {
             selector: "node[level=2]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
-            commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
+            commands: function (ele) {
+              // an array of commands to list in the menu or a function that returns the array
               const id = ele.data("id");
 
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes with related interests of manual added interests (ids that are bigger than 250)
@@ -734,10 +767,11 @@ const NodeLink = (props) => {
                   {
                     content: "Learn more", // html/text content to be displayed in the menu
                     contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-                    select: function (ele) { // a function to execute when the command is selected
+                    select: function (ele) {
+                      // a function to execute when the command is selected
                       handleOpenLearn(ele); // `ele` holds the reference to the active element
                     },
-                    enabled: true // whether the command is selectable
+                    enabled: true, // whether the command is selectable
                   },
                   {
                     content: "Expand",
@@ -745,22 +779,27 @@ const NodeLink = (props) => {
                     select: function (ele) {
                       let succ = ele.successors().targets();
                       let edges = ele.successors();
-    
+
                       //animation for edges after clicking on 'Expand' (indication after deleting/expanding)
-                      edges.style("opacity", 0)
-                      .style("background-color", "background-color")
-                      .animate({
-                        style: { opacity: 1 },
-                        duration: 750,
-                        easing: "ease-in-sine",
-                        queue: false,
-                        complete: function () {
-                          edges.style("background-color", ele.css("background-color"));
-                        }
-                      });
-                
+                      edges
+                        .style("opacity", 0)
+                        .style("background-color", "background-color")
+                        .animate({
+                          style: { opacity: 1 },
+                          duration: 750,
+                          easing: "ease-in-sine",
+                          queue: false,
+                          complete: function () {
+                            edges.style(
+                              "background-color",
+                              ele.css("background-color")
+                            );
+                          },
+                        });
+
                       //animation for nodes after clicking on 'Expand' (indication after deleting/expanding)
-                      succ.style("opacity", 0)
+                      succ
+                        .style("opacity", 0)
                         .style("background-color", "background-color")
                         .style("width", 0)
                         .style("height", 0)
@@ -770,33 +809,36 @@ const NodeLink = (props) => {
                           easing: "ease-in-sine",
                           queue: false,
                           complete: function () {
-                            succ.style("background-color", ele.css("background-color"));
-                          }
+                            succ.style(
+                              "background-color",
+                              ele.css("background-color")
+                            );
+                          },
                         });
-    
-                    let ids = [];
-                    edges.map((e) => {
-                      e.removeClass("collapsed");
-                      ids.push(
-                        e.data()["target"],
-                        e.data()["source"],
-                        e.data()["id"]
-                      );
-                      console.log(ids, "test");
-                    });
 
-                    cy.fit([ele, succ, edges], 16);
+                      let ids = [];
+                      edges.map((e) => {
+                        e.removeClass("collapsed");
+                        ids.push(
+                          e.data()["target"],
+                          e.data()["source"],
+                          e.data()["id"]
+                        );
+                        console.log(ids, "test");
+                      });
+
+                      cy.fit([ele, succ, edges], 16);
+                    },
+                    enabled: true, // whether the command is selectable
                   },
-                  enabled: true // whether the command is selectable
-                  },
-                  { 
+                  {
                     content: "Delete",
                     contentStyle: {},
                     select: function (ele) {
                       handleOpenDelete(ele);
                       console.log("content of ele: ", ele);
                     },
-                    enabled: true
+                    enabled: true,
                   },
                   {
                     content: "Add to my interests", // html/text content to be displayed in the menu
@@ -810,23 +852,22 @@ const NodeLink = (props) => {
                         currInterest +
                         " has added to your interests";
                       toast.success(msg, {
-                        toastId: "addLevel2"
+                        toastId: "addLevel2",
                       }); // `ele` holds the reference to the active element
                     },
-                    enabled: true // whether the command is selectable
-                  }
+                    enabled: true, // whether the command is selectable
+                  },
                 ];
-               } else {
-
+              } else {
                 //options that are displayed after clicking on the nodes that represent the related interests of manual added nodes - id > 250 (manual adding of nodes)
                 return [
                   {
                     content: "Read more",
-                    select: function(ele) {
-                      const url = ele.data('url');
-                      window.open(url, '_blank');
+                    select: function (ele) {
+                      const url = ele.data("url");
+                      window.open(url, "_blank");
                     },
-                    enabled: true
+                    enabled: true,
                   },
                   {
                     content: "Delete",
@@ -834,8 +875,8 @@ const NodeLink = (props) => {
                     select: function (ele) {
                       handleOpenDelete(ele);
                     },
-                    enabled: true
-                  }
+                    enabled: true,
+                  },
                 ];
               }
             }, // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
@@ -853,14 +894,15 @@ const NodeLink = (props) => {
             itemTextShadowColor: "transparent", // the text shadow colour of the command's content
             zIndex: 9999, // the z-index of the ui div
             atMouse: false, // draw menu at mouse position
-            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+            outsideMenuCancel: 8, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
           let defaultsLevel1 = {
             selector: "node[level=1]",
             menuRadius: 75, // the outer radius (node center to the end of the menu) in pixels. It is added to the rendered size of the node. Can either be a number or function as in the example.
             //selector: "node", // elements matching this Cytoscape.js selector will trigger cxtmenus
-            commands: function (ele) { // an array of commands to list in the menu or a function that returns the array
+            commands: function (ele) {
+              // an array of commands to list in the menu or a function that returns the array
               const id = ele.data("id");
 
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes that were manually added (ids that are smaller than -1)
@@ -878,7 +920,7 @@ const NodeLink = (props) => {
                       // a function to execute when the command is selected
                       handleOpenLearn(ele); // `ele` holds the reference to the active element
                     },
-                    enabled: true // whether the command is selectable
+                    enabled: true, // whether the command is selectable
                   },
                   {
                     // example command
@@ -895,7 +937,7 @@ const NodeLink = (props) => {
                         s.removeClass("collapsed");
                       }); // `ele` holds the reference to the active element
                     },
-                    enabled: false
+                    enabled: false,
                     // whether the command is selectable
                   },
                   {
@@ -907,11 +949,10 @@ const NodeLink = (props) => {
                       // a function to execute when the command is selected
                       // `ele` holds the reference to the active element
                     },
-                    enabled: false // whether the command is selectable
+                    enabled: false, // whether the command is selectable
                   },
                 ];
-               } else {
-
+              } else {
                 //options that are displayed after clicking on the nodes that were manually added - with id < -1 (manual adding of nodes)
                 return [
                   {
@@ -926,25 +967,27 @@ const NodeLink = (props) => {
                       } */
                       const sourceId = parseInt(ele.data("id"));
 
-                      elements.forEach(element => {
+                      elements.forEach((element) => {
                         if (element.data.source === sourceId) {
                           //remove "collapsed" class from the element
-                          element.classes = element.classes.filter(cls => cls !== "collapsed");
+                          element.classes = element.classes.filter(
+                            (cls) => cls !== "collapsed"
+                          );
                         }
                       });
                       //console.log("Elements after expanding:", elements);
                       cy.json(elements);
                       handleExpandClick(ele);
-                  },
-                  enabled: true // whether the command is selectable
+                    },
+                    enabled: true, // whether the command is selectable
                   },
                   {
                     content: "Read more",
-                    select: function(ele) {
-                      const url = ele.data('url');
-                      window.open(url, '_blank');
+                    select: function (ele) {
+                      const url = ele.data("url");
+                      window.open(url, "_blank");
                     },
-                    enabled: true
+                    enabled: true,
                   },
                   {
                     content: "Delete",
@@ -952,8 +995,8 @@ const NodeLink = (props) => {
                     select: function (ele) {
                       handleOpenDelete(ele);
                     },
-                    enabled: true
-                  }
+                    enabled: true,
+                  },
                 ];
               }
             },
@@ -971,7 +1014,7 @@ const NodeLink = (props) => {
             itemTextShadowColor: "transparent", // the text shadow colour of the command's content
             zIndex: 9999, // the z-index of the ui div
             atMouse: false, // draw menu at mouse position
-            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+            outsideMenuCancel: 8, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
           let defaultsLevel3 = {
@@ -989,7 +1032,7 @@ const NodeLink = (props) => {
                   // a function to execute when the command is selected
                   handleOpenLearn(ele); // `ele` holds the reference to the active element
                 },
-                enabled: true // whether the command is selectable
+                enabled: true, // whether the command is selectable
               },
               {
                 // example command
@@ -1002,26 +1045,31 @@ const NodeLink = (props) => {
                   //let succ = ele.successors().targets();
 
                   //succ.map((s) => {
-                    //s.removeClass("collapsed");
+                  //s.removeClass("collapsed");
                   //}); // `ele` holds the reference to the active element
                   let succ = ele.successors().targets();
                   let edges = ele.successors();
 
                   //animation for edges after clicking on 'Expand' (indication after deleting/expanding)
-                  edges.style("opacity", 0)
-                  .style("background-color", "background-color")
-                  .animate({
-                    style: { opacity: 1 },
-                    duration: 750,
-                    easing: "ease-in-sine",
-                    queue: false,
-                    complete: function () {
-                      edges.style("background-color", ele.css("background-color"));
-                    }
-                  });
-            
+                  edges
+                    .style("opacity", 0)
+                    .style("background-color", "background-color")
+                    .animate({
+                      style: { opacity: 1 },
+                      duration: 750,
+                      easing: "ease-in-sine",
+                      queue: false,
+                      complete: function () {
+                        edges.style(
+                          "background-color",
+                          ele.css("background-color")
+                        );
+                      },
+                    });
+
                   //animation for nodes after clicking on 'Expand' (indication after deleting/expanding)
-                  succ.style("opacity", 0)
+                  succ
+                    .style("opacity", 0)
                     .style("background-color", "background-color")
                     .style("width", 0)
                     .style("height", 0)
@@ -1031,8 +1079,11 @@ const NodeLink = (props) => {
                       easing: "ease-in-sine",
                       queue: false,
                       complete: function () {
-                        succ.style("background-color", ele.css("background-color"));
-                      }
+                        succ.style(
+                          "background-color",
+                          ele.css("background-color")
+                        );
+                      },
                     });
 
                   let ids = [];
@@ -1048,10 +1099,10 @@ const NodeLink = (props) => {
 
                   succ.map((s) => {
                     s.removeClass("collapsed1");
-                  })
+                  });
                   cy.fit([ele, succ, edges], 16);
                 },
-                enabled: true // whether the command is selectable
+                enabled: true, // whether the command is selectable
               },
               {
                 content: "Delete",
@@ -1059,8 +1110,8 @@ const NodeLink = (props) => {
                 select: function (ele) {
                   handleOpenDelete(ele);
                 },
-                enabled: true
-              }, 
+                enabled: true,
+              },
               {
                 content: "Add to my interests", // html/text content to be displayed in the menu
                 contentStyle: {}, // css key:value pairs to set the command's css in js if you want
@@ -1069,15 +1120,15 @@ const NodeLink = (props) => {
                   let currInterest = ele.data()["label"];
                   addNewInterest(currInterest);
                   let msg =
-                      "The interest " +
-                      currInterest +
-                      " has added to your interests";
+                    "The interest " +
+                    currInterest +
+                    " has added to your interests";
                   toast.success(msg, {
-                    toastId: "addLevel2"
+                    toastId: "addLevel2",
                   }); // `ele` holds the reference to the active element
                 },
-                enabled: true // whether the command is selectable
-              }
+                enabled: true, // whether the command is selectable
+              },
             ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -1093,7 +1144,7 @@ const NodeLink = (props) => {
             itemTextShadowColor: "transparent", // the text shadow colour of the command's content
             zIndex: 9999, // the z-index of the ui div
             atMouse: false, // draw menu at mouse position
-            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+            outsideMenuCancel: 8, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
           };
 
           //commands for second expandable layer (generate new layer of interests)
@@ -1113,7 +1164,7 @@ const NodeLink = (props) => {
                   // a function to execute when the command is selected
                   handleOpenLearn(ele); // `ele` holds the reference to the active element
                 },
-                enabled: true // whether the command is selectable
+                enabled: true, // whether the command is selectable
               },
               {
                 // example command
@@ -1129,10 +1180,10 @@ const NodeLink = (props) => {
                   succ.map((s) => {
                     s.removeClass("collapsed");
                   });
-                   
+
                   // `ele` holds the reference to the active element
                 },
-                enabled: false // whether the command is selectable
+                enabled: false, // whether the command is selectable
               },
               {
                 content: "Delete",
@@ -1140,8 +1191,8 @@ const NodeLink = (props) => {
                 select: function (ele) {
                   handleOpenDelete(ele);
                 },
-                enabled: true
-              }, 
+                enabled: true,
+              },
               {
                 // example command
                 // optional: custom background color for item
@@ -1152,16 +1203,16 @@ const NodeLink = (props) => {
                   let currInterest = ele.data()["label"];
                   addNewInterest(currInterest);
                   let msg =
-                      "The interest " +
-                      currInterest +
-                      " has added to your interests";
+                    "The interest " +
+                    currInterest +
+                    " has added to your interests";
                   toast.success(msg, {
-                    toastId: "addLevel2"
+                    toastId: "addLevel2",
                   });
                   // `ele` holds the reference to the active element
                 },
-                enabled: true // whether the command is selectable
-              }
+                enabled: true, // whether the command is selectable
+              },
             ], // function( ele ){ return [ /*...*/ ] }, // a function that returns commands or a promise of commands
             fillColor: "black", // the background colour of the menu
             activeFillColor: "grey", // the colour used to indicate the selected command
@@ -1177,15 +1228,14 @@ const NodeLink = (props) => {
             itemTextShadowColor: "transparent", // the text shadow colour of the command's content
             zIndex: 9999, // the z-index of the ui div
             atMouse: false, // draw menu at mouse position
-            outsideMenuCancel: 8 // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
-          }
+            outsideMenuCancel: 8, // if set to a number, this will cancel the command if the pointer is released outside of the spotlight, padded by the number given
+          };
 
           let menu4 = cy.cxtmenu(defaultsLevel4); //set commands for second expandable layer (generate new layer of interests)
           let menu2 = cy.cxtmenu(defaultsLevel2);
           let menu1 = cy.cxtmenu(defaultsLevel1);
           let menu3 = cy.cxtmenu(defaultsLevel3);
           let menu0 = cy.cxtmenu(defaultsLevel0);
-
         }}
       />
       <Dialog open={openDialog.openLearn} onClose={handleCloseLearn}>
@@ -1196,20 +1246,32 @@ const NodeLink = (props) => {
         )}
         <DialogContent>
           {""}
-          <WikiDesc data={openDialog.nodeObj}/>
+          <WikiDesc data={openDialog.nodeObj} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseLearn}>Close</Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer/>
+      <ToastContainer />
 
       {/* modal (manual adding of interests) */}
       <Dialog open={modalOpen} onClose={handleCloseModal}>
-        <DialogTitle>Please enter an interest that you would like to add:</DialogTitle>
+        <DialogTitle>
+          Please enter an interest that you would like to add:
+        </DialogTitle>
         <DialogContent>
-          <TextField id="keywordInput" type="text" value={keyword} onChange={handleKeywordChange} fullWidth />
-          <Button variant="contained" onClick={handleSearchArticles} color="primary">
+          <TextField
+            id="keywordInput"
+            type="text"
+            value={keyword}
+            onChange={handleKeywordChange}
+            fullWidth
+          />
+          <Button
+            variant="contained"
+            onClick={handleSearchArticles}
+            color="primary"
+          >
             Search
           </Button>
           <List>
@@ -1230,7 +1292,15 @@ const NodeLink = (props) => {
                   }}
                   endIcon={
                     <>
-                      <img src={WikipediaLogo} alt="Wikipedia logo" style={{ height: '25px', width: '25px', marginRight: '8px'}} />
+                      <img
+                        src={WikipediaLogo}
+                        alt="Wikipedia logo"
+                        style={{
+                          height: "25px",
+                          width: "25px",
+                          marginRight: "8px",
+                        }}
+                      />
                       <SvgIcon component={OpenInNew} />
                     </>
                   }
@@ -1242,20 +1312,32 @@ const NodeLink = (props) => {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleCloseModal} color="secondary">
+          <Button
+            variant="contained"
+            onClick={handleCloseModal}
+            color="secondary"
+          >
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* workaround with pop-up window, so that related interests of manual added nodes are rendered in the graph (manual adding of interests) */}
-      <Dialog open={isExpandDialogOpen} onClose={handleExpandDialogClose} style={{ visibility: 'hidden' }}> {/* it is never displayed */}
+      <Dialog
+        open={isExpandDialogOpen}
+        onClose={handleExpandDialogClose}
+        style={{ visibility: "hidden" }}
+      >
+        {" "}
+        {/* it is never displayed */}
         <DialogTitle>Expand</DialogTitle>
         <DialogContent>
           {/* content of the dialog */}
           {selectedNode && (
             <div>
-              <p>Pop-up window content for node {selectedNode.id()} goes here.</p>
+              <p>
+                Pop-up window content for node {selectedNode.id()} goes here.
+              </p>
               <p>Desired content</p>
             </div>
           )}
@@ -1270,23 +1352,33 @@ const NodeLink = (props) => {
       {/* delete confirmation modal (delete button) */}
       <Dialog open={deleteOpen.openDelete} onClose={handleCloseDelete}>
         {deleteOpen.nodeObj !== null ? (
-        <DialogTitle>Are you sure you want to delete the interest: {deleteOpen.nodeObj.label} ?</DialogTitle> 
-        ): (
-        <DialogTitle></DialogTitle>  
+          <DialogTitle>
+            Are you sure you want to delete the interest:{" "}
+            {deleteOpen.nodeObj.label} ?
+          </DialogTitle>
+        ) : (
+          <DialogTitle></DialogTitle>
         )}
         <DialogActions>
-          <Button variant="contained" onClick={handleCloseDelete} color="primary">
+          <Button
+            variant="contained"
+            onClick={handleCloseDelete}
+            color="primary"
+          >
             Cancel
           </Button>
-          <Button variant="contained" onClick={() => {
-            deleteInterest(deleteOpen.nodeObj);
-            handleCloseDelete();
-            }} color="secondary">
-          Delete
+          <Button
+            variant="contained"
+            onClick={() => {
+              deleteInterest(deleteOpen.nodeObj);
+              handleCloseDelete();
+            }}
+            color="secondary"
+          >
+            Delete
           </Button>
-          </DialogActions>
+        </DialogActions>
       </Dialog>
-
     </>
   );
 };

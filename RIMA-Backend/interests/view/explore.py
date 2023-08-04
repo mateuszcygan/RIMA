@@ -94,6 +94,7 @@ def getDataNewInterestExplore(input):
         currTop3Interests = getCountLinks(currLinks, currText)
         currRelatedTopics = []
 
+        #generate interests for second expandable layer (generate new layer of interests)
         for j in currTop3Interests:
             currLinks2, currText2=getLinksTextInPage(j[0])
             currTop3Interests2=getCountLinks(currLinks2, currText2)

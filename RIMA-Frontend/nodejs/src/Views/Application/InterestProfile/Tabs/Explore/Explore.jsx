@@ -1,15 +1,22 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import {Button, Checkbox, CircularProgress, Grid, Menu, MenuItem, Typography} from "@material-ui/core";
+import {
+  Button,
+  Checkbox,
+  CircularProgress,
+  Grid,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@material-ui/core";
 import FilterListIcon from "@material-ui/icons/FilterList";
 import NodeLink from "./GetNodeLinkExplore";
 import RestAPI from "../../../../../Services/api";
-import PaletteIcon from '@material-ui/icons/Palette';
-import { Divider } from '@material-ui/core';
-
+import PaletteIcon from "@material-ui/icons/Palette";
+import { Divider } from "@material-ui/core";
 
 const Explore = (props) => {
-  const {data, interests, setInterests, setData}=props
+  const { data, interests, setInterests, setData } = props;
   //let checked = [];
   //let nodeData = [];
   //const [data, setData] = useState([])
@@ -18,24 +25,33 @@ const Explore = (props) => {
     openMenu: null,
     checked: [],
     graphData: null,
-    interests: []
+    interests: [],
   });
   const [keywords, setKeywords] = useState([]);
 
-  const [checkNewKeywords, setCheckNewKeywords] = useState(false)
+  const [checkNewKeywords, setCheckNewKeywords] = useState(false);
 
   let currentUser = JSON.parse(localStorage.getItem("rimaUser"));
 
   const fetchKeywords = async () => {
     //setState({...state,userInterests: []})
     const response = await RestAPI.longTermInterest(currentUser);
-    const {data} = response;
+    const { data } = response;
     let dataArray = [];
-    let curInterests = []
+    let curInterests = [];
     data.map((d) => {
       //console.log(d, "test")
-      curInterests.push(d.keyword)
-      const {id, categories, original_keywords, original_keywords_with_weights, source, keyword, weight, papers} = d;
+      curInterests.push(d.keyword);
+      const {
+        id,
+        categories,
+        original_keywords,
+        original_keywords_with_weights,
+        source,
+        keyword,
+        weight,
+        papers,
+      } = d;
       let newData = {
         id: id,
         categories: categories,
@@ -47,147 +63,125 @@ const Explore = (props) => {
         papers: papers,
       };
       dataArray.push(newData);
-    })
+    });
     setKeywords(dataArray);
-    console.log(curInterests, "test fetch")
-    return curInterests
+    console.log(curInterests, "test fetch");
+    return curInterests;
   };
 
-
   const compareInterests = async () => {
-    setCheckNewKeywords(false)
-    let curInterests = await fetchKeywords()
-    let oldInterests = interests
+    setCheckNewKeywords(false);
+    let curInterests = await fetchKeywords();
+    let oldInterests = interests;
 
     if (curInterests) {
-      if(curInterests.toString()!==interests.toString()){
-        setState({...state, checked: [], graphData: null})
-        setInterests(false)
-        setData(false)
-        setCheckNewKeywords(false)
-        let curData = data
+      if (curInterests.toString() !== interests.toString()) {
+        setState({ ...state, checked: [], graphData: null });
+        setInterests(false);
+        setData(false);
+        setCheckNewKeywords(false);
+        let curData = data;
 
-
-        console.log(interests, "data missing interests")
-        console.log(curInterests, "data missing curInterests")
-        let missingInterests = curInterests.filter((i)=>
-        {return !oldInterests.includes(i)})
-        console.log(missingInterests, "data missing")
+        console.log(interests, "data missing interests");
+        console.log(curInterests, "data missing curInterests");
+        let missingInterests = curInterests.filter((i) => {
+          return !oldInterests.includes(i);
+        });
+        console.log(missingInterests, "data missing");
         //missingInterests=missingInterests.slice(0,2)
-        let deletedInterests = oldInterests.filter((i)=>{
-          return !curInterests.includes(i)
-        })
+        let deletedInterests = oldInterests.filter((i) => {
+          return !curInterests.includes(i);
+        });
 
-        if (deletedInterests.length>0){
-          curData.forEach((x,i)=>{
-            console.log(x, i, "delete interests")
-            let deltedInterest=x.title
-            deltedInterest=deltedInterest.toLowerCase()
-            if(deletedInterests.includes(deltedInterest)){
-              console.log(x, i, "delete interests")
-              curData.splice(i,1)
+        if (deletedInterests.length > 0) {
+          curData.forEach((x, i) => {
+            console.log(x, i, "delete interests");
+            let deltedInterest = x.title;
+            deltedInterest = deltedInterest.toLowerCase();
+            if (deletedInterests.includes(deltedInterest)) {
+              console.log(x, i, "delete interests");
+              curData.splice(i, 1);
             }
-          })
+          });
           /*deletedInterests.forEach((x, i)=>{
             console.log(x, i, "delete interests")
             //delete curData[i]
 
           })*/
-        console.log(curData, "deleted interests data")
-
+          console.log(curData, "deleted interests data");
         }
 
-        if (missingInterests.length > 0){
+        if (missingInterests.length > 0) {
+          RestAPI.getExploreData(missingInterests).then((res) => {
+            const { data } = res;
+            console.log(curData, "data cur Data ");
+            let newData = data.data;
+            newData = newData.concat(curData);
 
-          RestAPI.getExploreData(missingInterests).then(res=>{
-            const {data}=res
-            console.log(curData, "data cur Data ")
-            let newData = data.data
-             newData=newData.concat(curData)
-
-            console.log(newData, "data Explore")
+            console.log(newData, "data Explore");
 
             //setInterests(curInterests)
-            setInterests(curInterests)
-            setData(newData)
+            setInterests(curInterests);
+            setData(newData);
 
-            console.log("data new interests", Object.keys(newData))
+            console.log("data new interests", Object.keys(newData));
 
-            console.log("done data Explore", newData)
-
-          })
+            console.log("done data Explore", newData);
+          });
+        } else {
+          setInterests(curInterests);
+          setData(curData);
         }
-        else{
-          setInterests(curInterests)
-          setData(curData)
-        }
-        setCheckNewKeywords(true)
+        setCheckNewKeywords(true);
+      } else {
+        setCheckNewKeywords(true);
+        setInterests(curInterests);
       }
-      else{
-        setCheckNewKeywords(true)
-        setInterests(curInterests)
-      }
-
-
     }
-
-
-  }
- useEffect(() => {
+  };
+  useEffect(() => {
     //let curInterests= fetchKeywords()
-    if(data){
-      setState({...state, graphData:null})
-      compareInterests()
+    if (data) {
+      setState({ ...state, graphData: null });
+      compareInterests();
     }
-
-
-  }, [])
-
-
+  }, []);
 
   useEffect(() => {
-    console.log("data useEffectt", data)
-    setCheckNewKeywords(false)
+    console.log("data useEffectt", data);
+    setCheckNewKeywords(false);
 
-    let newChecked=[]
-    let nodeData=[]
-      if(data) {
-        setState({...state,  graphData: null})
-          compareInterests().then(res=>{
-
-            data.map((d, index) => {
-              console.log(d, "data map interests explore.py")
-              if (index < 3) {
-                newChecked.push(true);
-                nodeData.push(d);
-                console.log(nodeData, newChecked, "nodedata")
-              } else {
-                newChecked.push(false);
-              }
-
-            });
-            console.log(nodeData, newChecked, "nodedata")
-            setState({...state, checked: newChecked, graphData: nodeData});
-
-          })
-
-
+    let newChecked = [];
+    let nodeData = [];
+    if (data) {
+      setState({ ...state, graphData: null });
+      compareInterests().then((res) => {
+        data.map((d, index) => {
+          console.log(d, "data map interests explore.py");
+          if (index < 3) {
+            newChecked.push(true);
+            nodeData.push(d);
+            console.log(nodeData, newChecked, "nodedata");
+          } else {
+            newChecked.push(false);
+          }
+        });
+        console.log(nodeData, newChecked, "nodedata");
+        setState({ ...state, checked: newChecked, graphData: nodeData });
+      });
     }
-
-  }, [data])
-
-
+  }, [data]);
 
   useEffect(() => {
     setChangeInterest(true);
-    console.log(state, "change checked")
+    console.log(state, "change checked");
   }, [state.checked]);
 
   const handleOpenMenu = (event) => {
-    setState({...state, openMenu: event.currentTarget});
+    setState({ ...state, openMenu: event.currentTarget });
   };
   const handleCloseMenu = () => {
-    setState({...state, openMenu: null});
+    setState({ ...state, openMenu: null });
   };
 
   const handleCheck = (index) => {
@@ -195,16 +189,16 @@ const Explore = (props) => {
     let newNodeData = [];
 
     checkedNew[index] = !checkedNew[index];
-    console.log("data interests explore.py")
+    console.log("data interests explore.py");
 
     data.map((d, i) => {
       if (checkedNew[i]) {
-        console.log("data interests explore.py", d, i)
+        console.log("data interests explore.py", d, i);
         newNodeData.push(d);
       }
     });
 
-    setState({...state, checked: checkedNew, graphData: newNodeData});
+    setState({ ...state, checked: checkedNew, graphData: newNodeData });
   };
 
   //color palette (color button)
@@ -227,9 +221,9 @@ const Explore = (props) => {
     "#FCAB64",
     "#EDCB96",
     "#231942",
-    "#98B9F2"
+    "#98B9F2",
   ];
-  
+
   //deep ocean
   const colSet2 = [
     "#1e81b0",
@@ -249,7 +243,7 @@ const Explore = (props) => {
     "#044553",
     "#585551",
     "#6bc7e6",
-    "#fdb872"
+    "#fdb872",
   ];
 
   //spring meadow
@@ -257,46 +251,46 @@ const Explore = (props) => {
     "#e6194B",
     "#f58231",
     "#ffc107",
-    "#CDDC39", 
+    "#CDDC39",
     "#3cb44b",
     "#42d4f4",
     "#4363d8",
     "#911eb4",
     "#bb33ff",
     "#ff6699",
-    "#CDDC39", 
+    "#CDDC39",
     "#3cb44b",
     "#42d4f4",
     "#4363d8",
     "#911eb4",
     "#bb33ff",
     "#ff6699",
-    "#CDDC39"
-];
+    "#CDDC39",
+  ];
 
   //accessible colors
   const colSet4 = [
     "#11DC11",
     "#E61313",
     "#720AD8",
-    "#2F7D7C", 
+    "#2F7D7C",
     "#FF6DB6",
     "#0085FF",
     "#11DC11",
     "#E61313",
     "#720AD8",
-    "#2F7D7C", 
+    "#2F7D7C",
     "#FF6DB6",
     "#0085FF",
     "#11DC11",
     "#E61313",
     "#720AD8",
-    "#2F7D7C", 
+    "#2F7D7C",
     "#FF6DB6",
-    "#0085FF"
+    "#0085FF",
   ];
 
-  //states needed to manage colors of nodes and check box responsible for choosing 
+  //states needed to manage colors of nodes and check box responsible for choosing
   const [nodeColors, setNodeColors] = useState(defaultSet);
   const [selectedColorBox, setSelectedColorBox] = useState(1);
 
@@ -318,6 +312,7 @@ const Explore = (props) => {
     }
   };
 
+  //logic to handle index value based on the change of the selected checkbox (color button)
   const handleSelectedColorBox = (index) => {
     if (index === 1) {
       setSelectedColorBox(1);
@@ -330,8 +325,9 @@ const Explore = (props) => {
     }
   };
 
+  //event handlers for closing and opening menu with available colors' sets (color button)
   const handleOpenNodeColorsMenu = (event) => {
-    setStateColor({...stateColor, openColorsMenu: event.currentTarget});
+    setStateColor({ ...stateColor, openColorsMenu: event.currentTarget });
     console.log(stateColor);
   };
 
@@ -347,117 +343,141 @@ const Explore = (props) => {
   }, [nodeColors]);
 
   return (
-
     <>
-      <Grid container justify="space-between" style={{paddingTop: 24, paddingBottom: 8}}>
-        <Button startIcon={<FilterListIcon/>} color="primary" onClick={handleOpenMenu} style={{ order: 2 }}>
+      <Grid
+        container
+        justify="space-between"
+        style={{ paddingTop: 24, paddingBottom: 8 }}
+      >
+        <Button
+          startIcon={<FilterListIcon />}
+          color="primary"
+          onClick={handleOpenMenu}
+          style={{ order: 2 }} //order 2 - button on the right side
+        >
           Filter interests
         </Button>
-        {data?<Menu
+        {data ? (
+          <Menu
             id="filterInterestExplore"
             anchorEl={state.openMenu}
             keepMounted
             open={Boolean(state.openMenu)}
             onClose={handleCloseMenu}
-        >
-          {state.checked.length > 0 ? data.map((d, index) => {
-            let isChecked = state.checked[index];
+          >
+            {state.checked.length > 0 ? (
+              data.map((d, index) => {
+                let isChecked = state.checked[index];
 
-            return (
-                <MenuItem>
-                  <Checkbox
+                return (
+                  <MenuItem>
+                    <Checkbox
                       checked={isChecked}
                       keyCheck={index}
                       onChange={() => handleCheck(index)}
-                  />
-                  {d.title}
-                </MenuItem>
-            );
-          }) : <></>}
-        </Menu>:<></>}
+                    />
+                    {d.title}
+                  </MenuItem>
+                );
+              })
+            ) : (
+              <></>
+            )}
+          </Menu>
+        ) : (
+          <></>
+        )}
 
         {/* (color button) */}
-        <Button 
-          startIcon={<PaletteIcon/>} 
-          color="primary" 
-          onClick={handleOpenNodeColorsMenu} 
-          style={{ order: 1 }}
+        <Button
+          startIcon={<PaletteIcon />}
+          color="primary"
+          onClick={handleOpenNodeColorsMenu}
+          style={{ order: 1 }} //order 1 - button on the left side
         >
           Change colors of nodes
         </Button>
 
         {stateColor.openColorsMenu && (
-      <Menu
-      id="nodeColorsMenu"
-      anchorEl={stateColor.openColorsMenu}
-      open={Boolean(stateColor.openColorsMenu)}
-      onClose={handleCloseNodeColorsMenu}
-    >
-      <MenuItem disabled>
-        <Typography variant="body1">sets of colors</Typography>
-      </MenuItem>
-      <MenuItem>
-        <Checkbox
-          checked={selectedColorBox === 1}
-          onChange={() => {
-            handleColorChange(1);
-            handleSelectedColorBox(1);
-            console.log('Set of colors changed to default set');
-            nodeColors.forEach(element => console.log(element));
-          }}
-        />
-        <Typography variant="body1">midnight shadows</Typography>
-      </MenuItem>
-      <MenuItem>
-        <Checkbox
-          checked={selectedColorBox === 2}
-          onChange={() => {
-            handleColorChange(2);
-            handleSelectedColorBox(2);
-            console.log('Set of colors changed to second set');
-            nodeColors.forEach(element => console.log(element));
-          }}
-        />
-        <Typography variant="body1">deep ocean</Typography>
-      </MenuItem>
-      <MenuItem>
-        <Checkbox
-          checked={selectedColorBox === 3}
-          onChange={() => {
-            handleColorChange(3);
-            handleSelectedColorBox(3);
-            console.log('Set of colors changed to third set');
-            nodeColors.forEach(element => console.log(element));
-          }}
-        />
-        <Typography variant="body1">spring meadow</Typography>
-      </MenuItem>
-      <Divider /> 
-      <MenuItem>
-        <Checkbox
-          checked={selectedColorBox === 4}
-          onChange={() => {
-            handleColorChange(4);
-            handleSelectedColorBox(4);
-            console.log('Set of colors changed to fourth set');
-            nodeColors.forEach(element => console.log(element));
-          }}
-        />
-        <Typography variant="body1">accessible colors</Typography>
-      </MenuItem>
-    </Menu>
-    )}
+          <Menu
+            id="nodeColorsMenu"
+            anchorEl={stateColor.openColorsMenu}
+            open={Boolean(stateColor.openColorsMenu)}
+            onClose={handleCloseNodeColorsMenu}
+          >
+            <MenuItem disabled>
+              <Typography variant="body1">sets of colors</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Checkbox
+                checked={selectedColorBox === 1}
+                onChange={() => {
+                  handleColorChange(1);
+                  handleSelectedColorBox(1);
+                  console.log("Set of colors changed to default set");
+                  nodeColors.forEach((element) => console.log(element));
+                }}
+              />
+              <Typography variant="body1">midnight shadows</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Checkbox
+                checked={selectedColorBox === 2}
+                onChange={() => {
+                  handleColorChange(2);
+                  handleSelectedColorBox(2);
+                  console.log("Set of colors changed to second set");
+                  nodeColors.forEach((element) => console.log(element));
+                }}
+              />
+              <Typography variant="body1">deep ocean</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Checkbox
+                checked={selectedColorBox === 3}
+                onChange={() => {
+                  handleColorChange(3);
+                  handleSelectedColorBox(3);
+                  console.log("Set of colors changed to third set");
+                  nodeColors.forEach((element) => console.log(element));
+                }}
+              />
+              <Typography variant="body1">spring meadow</Typography>
+            </MenuItem>
+            <Divider />
+            <MenuItem>
+              <Checkbox
+                checked={selectedColorBox === 4}
+                onChange={() => {
+                  handleColorChange(4);
+                  handleSelectedColorBox(4);
+                  console.log("Set of colors changed to fourth set");
+                  nodeColors.forEach((element) => console.log(element));
+                }}
+              />
+              <Typography variant="body1">accessible colors</Typography>
+            </MenuItem>
+          </Menu>
+        )}
       </Grid>
-      <Grid container>
-        <Grid item xs={1}/>
-        <Grid item xs={10}>
-        {data ? <NodeLink data={state.graphData} keywords={keywords} setKeywords={setKeywords} colors={nodeColors} /> : <Loading />}
-        </Grid>
-        <Grid item xs={1}/>
-      </Grid>
-      
-    </>
 
+      <Grid container>
+        <Grid item xs={1} />
+        <Grid item xs={10}>
+          {data ? (
+            <NodeLink
+              data={state.graphData}
+              keywords={keywords}
+              setKeywords={setKeywords}
+              colors={nodeColors}
+            />
+          ) : (
+            <Loading />
+          )}
+        </Grid>
+        <Grid item xs={1} />
+      </Grid>
+    </>
   );
 };
 
@@ -473,12 +493,12 @@ export const Loading = () => {
         alignItems="center"
       >
         <Grid item>
-          <CircularProgress/>
+          <CircularProgress />
         </Grid>
         <Grid item>
           <Typography variant="overline"> Loading data </Typography>
         </Grid>
       </Grid>
     </>
-  )
-}
+  );
+};
