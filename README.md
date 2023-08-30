@@ -5,6 +5,18 @@
 
 A transparent Recommendation and Interest Modeling Application. Developed by Social Computer Group at the University of Duisburg-Essen
 
+## Project title
+Improving the interactive visualization of the Explore-Page to reach self-actualization.
+
+### Short description
+This project is about improving the transparent Recommendation and Interest Modeling Application, short RIMA, to make the user reach self-actualization through supporting various self-actualization goals. We aim to improve the experience of the self-actualization goal "Explore" by making the "Explore"-Page more appealing to use, give more options of interaction and adjusting the systems interests model, and have more accurate recommendations. In reference to our research question: "How can the page "Explore" be improved to reach the self-actualization goal "Explore"?", we developed various improvements to make the user reach this goal.
+
+#### Project Architecture
+##### Libraries 
+###### Screenshots
+###### Group Members
+Project realised by Mateusz Cygan, Serkan Topal and Pia Dungs.
+
 ## Installation
 
 ### Manual Installation Guide
