@@ -33,6 +33,37 @@ The following venn diagram illustrates the files in which respective improvement
 
 ### Screenshots
 
+<div align="center">
+    <img height="250px" src="screenshots/01capitalization.png" alt="adjustment of capitalization">
+    <img height="250px" src="screenshots/02hand-icon.jpg" alt="hand icon">
+    <img height="250px" src="screenshots/03indication.png" alt='indication after "Expand"'>
+</div>
+
+<div align="center">
+    <img height="250px" src="screenshots/04.1manual.png" alt=""Add own interests" option">
+</div>
+<div align="center">
+  <img height="250px" src="screenshots/04.2manual.png" alt=""Add own interests" search dialog window">
+  <img height="250px" src="screenshots/04.3manual.png" alt="manually added interests">
+</div>
+
+<div align="center">
+    <img height="250px" src="screenshots/05.1delete-button.png" alt=""delete"-button">
+    <img height="250px" src="screenshots/05.2delete-button.png" alt=""delete"-button confirmation dialog">
+</div>
+
+<p align="center"><img height="250px" src="screenshots/06doublings.png" alt="graph without doublings"></p>
+
+
+<p align="center"><img height="250px" src="screenshots/07.1color-button.png" alt="color button in grid layout"></p>
+
+<div align="center">
+    <img height="250px" src="screenshots/07.2color-button.png" alt="deep ocean color scheme">
+    <img height="250px" src="screenshots/07.3color-button.png" alt="spring meadow color scheme">
+    <img height="250px" src="screenshots/07.4color-button.png" alt="accessible colors color scheme">
+</div>
+  
+<p align="center"><img height="250px" src="screenshots/08new-layer.png" alt="additional layer of interests"></p>
 
 ### Group Members
 Project realized by Mateusz Cygan, Pia Dungs and Serkan Topal.
