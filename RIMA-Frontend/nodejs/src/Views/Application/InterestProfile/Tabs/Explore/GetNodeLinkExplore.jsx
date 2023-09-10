@@ -48,7 +48,7 @@ let colorPalette = [
   "#98B9F2",
 ];
 
-//additional function parameter for colors (color button)
+//additional function parameter for colors added (color button)
 function getColor(currColors, colors) {
   const allColors = colors;
   let pickedColor = "";
@@ -152,6 +152,7 @@ function getElements(data) {
                 };
                 elements.push(element, edge);
 
+                //handle appropriately interests from additional layer(generate new layer of interests)
                 let currRelatedTopics = r.currRelatedTopics;
 
                 currRelatedTopics.map((c) => {
@@ -181,6 +182,7 @@ function getElements(data) {
       }
     });
   } catch {
+    console.log("error data", data);
     elements = [
       {
         data: {
@@ -409,6 +411,7 @@ const NodeLink = (props) => {
 
     setElements([]);
     setElements(elementsCurr[0]);
+    console.log(elements); //color button
   }, [data, NodeLink.colors]);
 
   const layoutGraph = {
@@ -539,15 +542,6 @@ const NodeLink = (props) => {
     }
   };
 
-  //function to open the Wikipedia page in a new tab - "Read more" option (manual adding of interests)
-  const handlePreviewArticle = (event, article) => {
-    event.stopPropagation();
-    window.open(
-      `https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`,
-      "_blank"
-    );
-  };
-
   //function to handle articles displayed after user enters the keyword (manual adding of interests)
   window.handleArticlesSearch = (data) => {
     const fetchedArticles = data.query.search.map((article) => ({
@@ -612,7 +606,7 @@ const NodeLink = (props) => {
 
       elements.push(newNode, newEdge);
 
-      //fetch 3 related articles
+      //fetch 3 related articles based on interest that is selected
       const relatedUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=links&pllimit=3&titles=${article.title}&callback=handleRelatedArticles`;
 
       const script = document.createElement("script");
@@ -673,6 +667,15 @@ const NodeLink = (props) => {
     //console.log("related articles", relatedArticles);
   };
 
+  //function to open the Wikipedia page in a new tab - "Read more" option (manual adding of interests)
+  const handlePreviewArticle = (event, article) => {
+    event.stopPropagation();
+    window.open(
+      `https://en.wikipedia.org/wiki/${encodeURIComponent(article.title)}`,
+      "_blank"
+    );
+  };
+
   //workaround with pop-up window, so that related interests of manual added nodes are rendered in the graph (manual adding of interests)
   useEffect(() => {
     let timeoutId;
@@ -681,6 +684,7 @@ const NodeLink = (props) => {
         handleExpandDialogClose();
       }, 0.001); //timeout very small
     }
+    console.log("color button:", elements);
     return () => {
       clearTimeout(timeoutId);
     };
@@ -761,7 +765,7 @@ const NodeLink = (props) => {
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes with related interests of manual added interests (ids that are bigger than 250)
               //nodes with id < -1 are not contained (manual added nodes)
 
-              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
+              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of interests)
               if (id < 250) {
                 return [
                   {
@@ -859,7 +863,7 @@ const NodeLink = (props) => {
                   },
                 ];
               } else {
-                //options that are displayed after clicking on the nodes that represent the related interests of manual added nodes - id > 250 (manual adding of nodes)
+                //options that are displayed after clicking on the nodes that represent the related interests of manual added nodes - id > 250 (manual adding of interests)
                 return [
                   {
                     content: "Read more",
@@ -908,7 +912,7 @@ const NodeLink = (props) => {
               //defaultsLevel2 contains default interests' nodes (ids from 0 to 200) and nodes that were manually added (ids that are smaller than -1)
               //nodes with id > 250 are not contained (related interests for manual added nodes)
 
-              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of nodes)
+              //options that are displayed after clicking on the default nodes - with id > -1 && id < 250 (manual adding of interests)
               if (id > -1) {
                 return [
                   {
@@ -953,7 +957,7 @@ const NodeLink = (props) => {
                   },
                 ];
               } else {
-                //options that are displayed after clicking on the nodes that were manually added - with id < -1 (manual adding of nodes)
+                //options that are displayed after clicking on the nodes that were manually added - with id < -1 (manual adding of interests)
                 return [
                   {
                     content: "Expand",
