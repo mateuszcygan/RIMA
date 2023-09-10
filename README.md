@@ -12,7 +12,12 @@ Improving the interactive visualization of the "Explore"-Page to reach the self-
 This project is about improving the transparent Recommendation and Interest Modeling Application, short RIMA, to make the user reach self-actualization through supporting various self-actualization goals. We aim to improve the experience of the self-actualization goal "Explore" by making the "Explore"-Page more appealing to use, give more options of interaction and adjusting the systems interests model, and have more accurate recommendations. In reference to our research question: "How can the page "Explore" be improved to reach the self-actualization goal "Explore"?", we developed various improvements to make the user reach this goal.
 
 ### Project Architecture
-The "Explore"-Page consists of three main files. "Explore.jsx" and "GetNodeLinkExplore.jsx" are responsible for the user interface. In the "explore.py" file  for backe. 
+The "Explore"-Page comprises three main files. "Explore.jsx" is responsible for the grid layout where "Explore"-Page elements are positioned. "GetNodeLinkExplore.jsx" generates the "Explore"-graph. "explore.py" generates interests, which are subsequently sent to the frontend and displayed within the node-link diagram.
+
+Our group has introduced eight improvements to the system, which are distributed among these files. Six of them are directly related to the graph and have been implemented in "GetNodeLinkExplore.jsx". Within this module, we can also distinguish the "getElements" function, which appropriately structures the data from the backend for display in the "Explore"-graph. This function has been extended and used to actualize three of our improvements. Additionally, we have introduced a new element to the existing grid layout, partially implemented in the "Explore.jsx" file. Furthermore, we have incorporated a new layer of interests using the 'explore.py' file for this purpose.
+
+The following venn diagram illustrates the files in which respective improvements were implemented:
+<p align="center"><img height="400px" align="center" src="screenshots/ven-diagram.png" alt="project architecture"></p>
 
 ### Libraries
 Cytoscape.js  <br />
