@@ -17,13 +17,23 @@ The "Explore"-Page comprises three main files. "Explore.jsx" is responsible for 
 Our group has introduced eight improvements to the system, which are distributed among these files. Six of them are directly related to the graph and have been implemented in "GetNodeLinkExplore.jsx". Within this module, we can also distinguish the "getElements" function, which appropriately structures the data from the backend for display in the "Explore"-graph. This function has been extended and used to actualize three of our improvements. Additionally, we have introduced a new element to the existing grid layout, partially implemented in the "Explore.jsx" file. Furthermore, we have incorporated a new layer of interests using the 'explore.py' file for this purpose.
 
 The following venn diagram illustrates the files in which respective improvements were implemented:
-<p align="center"><img height="400px" align="center" src="" alt="project architecture"></p>
+<p align="center"><img height="400px" align="center" src="screenshots/ven-diagram2.png" alt="project architecture"></p>
 
 ### Libraries
-Cytoscape.js  <br />
-Material UI
+<ul>
+  <img src="https://raw.githubusercontent.com/cytoscape/cytoscape.js/unstable/documentation/img/cytoscape-logo.png" alt="Cytoscape.js logo" width="80" height="80">
+  <li>
+    <a href="https://github.com/cytoscape/cytoscape.js">Cytoscape.js</a>
+  </li>
+  <img src="https://mui.com/static/logo.png" alt="Material UI logo" width="80" height="80">
+  <li>
+    <a href="https://github.com/mui/material-ui">Material UI</a>
+  </li>
+</ul>
 
 ### Screenshots
+
+
 ### Group Members
 Project realized by Mateusz Cygan, Pia Dungs and Serkan Topal.
 
