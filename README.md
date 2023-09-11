@@ -32,13 +32,20 @@ The following venn diagram illustrates the files in which respective improvement
 </ul>
 
 ### Screenshots
+<h4 align="center">Introduced improvements</h4>
 
+<p align="center">From left: adjustment of readability, hand icon, indication after "Expand"</p>
 <div align="center">
-    <img height="250px" src="screenshots/01capitalization.png" alt="adjustment of capitalization">
+    <img height="250px" src="screenshots/01capitalization.png" alt="adjustment of readability">
     <img height="250px" src="screenshots/02hand-icon.jpg" alt="hand icon">
     <img height="250px" src="screenshots/03indication.png" alt='indication after "Expand"'>
 </div>
 
+<br />
+<br />
+<br />
+
+<p align="center">Manual addition of interests</p>
 <div align="center">
     <img height="250px" src="screenshots/04.1manual.png" alt=""Add own interests" option">
 </div>
@@ -47,14 +54,28 @@ The following venn diagram illustrates the files in which respective improvement
   <img height="250px" src="screenshots/04.3manual.png" alt="manually added interests">
 </div>
 
+<br />
+<br />
+<br />
+
+<p align="center">"Delete"-button</p>
 <div align="center">
     <img height="250px" src="screenshots/05.1delete-button.png" alt=""delete"-button">
     <img height="250px" src="screenshots/05.2delete-button.png" alt=""delete"-button confirmation dialog">
 </div>
 
+<br />
+<br />
+<br />
+
+<p align="center">Elimination of doubled interests in the graph</p>
 <p align="center"><img height="250px" src="screenshots/06doublings.png" alt="graph without doublings"></p>
 
+<br />
+<br />
+<br />
 
+<p align="center">Incorporation of button which enables to change color of nodes</p>
 <p align="center"><img height="250px" src="screenshots/07.1color-button.png" alt="color button in grid layout"></p>
 
 <div align="center">
@@ -62,7 +83,12 @@ The following venn diagram illustrates the files in which respective improvement
     <img height="250px" src="screenshots/07.3color-button.png" alt="spring meadow color scheme">
     <img height="250px" src="screenshots/07.4color-button.png" alt="accessible colors color scheme">
 </div>
-  
+
+<br />
+<br />
+<br />
+
+<p align="center">Additional layer of interests</p>
 <p align="center"><img height="250px" src="screenshots/08new-layer.png" alt="additional layer of interests"></p>
 
 ### Group Members
