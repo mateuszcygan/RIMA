@@ -158,22 +158,30 @@ function getElements(data) {
                 currRelatedTopics.map((c) => {
                   let idLevel4 = ids.pop();
                   label = c.title;
-                  element = {
-                    data: {
-                      id: idLevel4,
-                      label: label,
-                      level: 4,
-                      color: color,
-                      pageData: c.summary,
-                      url: c.wikiURL,
-                    },
-                    classes: ["collapsed1", "level4"],
-                  };
-                  edge = {
-                    data: { target: idLevel4, source: idLevel3, color: color },
-                    classes: ["collapsed1", "level4"],
-                  };
-                  elements.push(element, edge);
+
+                  if (!uniqueTitles.includes(label)) {
+                    uniqueTitles.push(label);
+                    element = {
+                      data: {
+                        id: idLevel4,
+                        label: label,
+                        level: 4,
+                        color: color,
+                        pageData: c.summary,
+                        url: c.wikiURL,
+                      },
+                      classes: ["collapsed1", "level4"],
+                    };
+                    edge = {
+                      data: {
+                        target: idLevel4,
+                        source: idLevel3,
+                        color: color,
+                      },
+                      classes: ["collapsed1", "level4"],
+                    };
+                    elements.push(element, edge);
+                  }
                 });
               }
             });
