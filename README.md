@@ -12,18 +12,85 @@ Improving the interactive visualization of the "Explore"-Page to reach the self-
 This project is about improving the transparent Recommendation and Interest Modeling Application, short RIMA, to make the user reach self-actualization through supporting various self-actualization goals. We aim to improve the experience of the self-actualization goal "Explore" by making the "Explore"-Page more appealing to use, give more options of interaction and adjusting the systems interests model, and have more accurate recommendations. In reference to our research question: "How can the page "Explore" be improved to reach the self-actualization goal "Explore"?", we developed various improvements to make the user reach this goal.
 
 ### Project Architecture
-The "Explore"-Page comprises three main files. "Explore.jsx" is responsible for the grid layout where "Explore"-Page elements are positioned. "GetNodeLinkExplore.jsx" generates the "Explore"-graph. "explore.py" generates interests, which are subsequently sent to the frontend and displayed within the node-link diagram.
+The "Explore"-Page comprises three main files. "Explore.jsx" is responsible for the grid layout where "Explore"-Page elements are positioned. "GetNodeLinkExplore.jsx" creates the "Explore"-graph and the "explore.py" file generates interests, which are subsequently sent to the frontend and displayed within the node-link diagram.
 
 Our group has introduced eight improvements to the system, which are distributed among these files. Six of them are directly related to the graph and have been implemented in "GetNodeLinkExplore.jsx". Within this module, we can also distinguish the "getElements" function, which appropriately structures the data from the backend for display in the "Explore"-graph. This function has been extended and used to actualize three of our improvements. Additionally, we have introduced a new element to the existing grid layout, partially implemented in the "Explore.jsx" file. Furthermore, we have incorporated a new layer of interests using the 'explore.py' file for this purpose.
 
 The following venn diagram illustrates the files in which respective improvements were implemented:
-<p align="center"><img height="400px" align="center" src="" alt="project architecture"></p>
+<p align="center"><img height="400px" align="center" src="screenshots/ven-diagram2.png" alt="project architecture"></p>
 
 ### Libraries
-Cytoscape.js  <br />
-Material UI
+<ul>
+  <img src="https://raw.githubusercontent.com/cytoscape/cytoscape.js/unstable/documentation/img/cytoscape-logo.png" alt="Cytoscape.js logo" width="80" height="80">
+  <li>
+    <a href="https://github.com/cytoscape/cytoscape.js">Cytoscape.js</a>
+  </li>
+  <img src="https://mui.com/static/logo.png" alt="Material UI logo" width="80" height="80">
+  <li>
+    <a href="https://github.com/mui/material-ui">Material UI</a>
+  </li>
+</ul>
 
 ### Screenshots
+<h4 align="center">Introduced improvements</h4>
+
+<p align="center">From left: adjustment of readability, hand icon, indication after "Expand"</p>
+<div align="center">
+    <img height="250px" src="screenshots/01capitalization.png" alt="adjustment of readability">
+    <img height="250px" src="screenshots/02hand-icon.jpg" alt="hand icon">
+    <img height="250px" src="screenshots/03indication.png" alt='indication after "Expand"'>
+</div>
+
+<br />
+<br />
+<br />
+
+<p align="center">Manual addition of interests</p>
+<div align="center">
+    <img height="250px" src="screenshots/04.1manual.png" alt=""Add own interests" option">
+</div>
+<div align="center">
+  <img height="250px" src="screenshots/04.2manual.png" alt=""Add own interests" search dialog window">
+  <img height="250px" src="screenshots/04.3manual.png" alt="manually added interests">
+</div>
+
+<br />
+<br />
+<br />
+
+<p align="center">"Delete"-button</p>
+<div align="center">
+    <img height="250px" src="screenshots/05.1delete-button.png" alt=""delete"-button">
+    <img height="250px" src="screenshots/05.2delete-button.png" alt=""delete"-button confirmation dialog">
+</div>
+
+<br />
+<br />
+<br />
+
+<p align="center">Elimination of doubled interests in the graph</p>
+<p align="center"><img height="250px" src="screenshots/06doublings.png" alt="graph without doublings"></p>
+
+<br />
+<br />
+<br />
+
+<p align="center">Incorporation of button which enables to change color of nodes</p>
+<p align="center"><img height="250px" src="screenshots/07.1color-button.png" alt="color button in grid layout"></p>
+
+<div align="center">
+    <img height="250px" src="screenshots/07.2color-button.png" alt="deep ocean color scheme">
+    <img height="250px" src="screenshots/07.3color-button.png" alt="spring meadow color scheme">
+    <img height="250px" src="screenshots/07.4color-button.png" alt="accessible colors color scheme">
+</div>
+
+<br />
+<br />
+<br />
+
+<p align="center">Additional layer of interests</p>
+<p align="center"><img height="250px" src="screenshots/08new-layer.png" alt="additional layer of interests"></p>
+
 ### Group Members
 Project realized by Mateusz Cygan, Pia Dungs and Serkan Topal.
 
