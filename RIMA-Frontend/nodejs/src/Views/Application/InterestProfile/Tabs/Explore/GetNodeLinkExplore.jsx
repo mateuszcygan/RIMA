@@ -372,45 +372,6 @@ const NodeLink = (props) => {
     }
   };
 
-  /*const addNewInterest = async (currInterest) => {
-    let alreadyExist = validateInterest(keywords, currInterest);
-
-     if (!alreadyExist) {
-         let newInterests = keywords;
-         let newInterest = {
-             id: Date.now(),
-             categories: [],
-             originalKeywords: [],
-             source: "Manual",
-             text: currInterest.toLowerCase(),
-             value: 3,
-         }
-         newInterests.push(newInterest);
-
-         newInterests.sort((a, b) => (a.value < b.value) ? 1 : ((b.value < a.value) ? -1 : 0));
-         let listOfInterests = [];
-         newInterests.forEach(interest => {
-             let item = {
-                 name: interest.text,
-                 weight: interest.value,
-                 id: interest.id,
-                 source:interest.source
-             }
-             listOfInterests.push(item);
-         });
-         console.log("Updated list", listOfInterests)
-         try {
-             await RestAPI.addKeyword(listOfInterests);
-         } catch (err) {
-             console.log(err);
-         }
-         // console.log(newInterests)
-     }
-     console.log("Interest already exists in my list!")
-  }*/
-
-  //const [state, setState]=useState(getElements(data))
-
   //useEffect - when NodeLink.colors are changed (check box in color button), then graph should be rendered with new colors (color button)
   useEffect(() => {
     colorPalette = NodeLink.colors;

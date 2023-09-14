@@ -290,7 +290,7 @@ const Explore = (props) => {
     "#0085FF",
   ];
 
-  //states needed to manage colors of nodes and check box responsible for choosing
+  //states needed to manage colors of nodes and check box responsible for choosing (color button)
   const [nodeColors, setNodeColors] = useState(defaultSet);
   const [selectedColorBox, setSelectedColorBox] = useState(1);
 
